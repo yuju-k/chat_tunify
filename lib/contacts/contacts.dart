@@ -51,6 +51,13 @@ class _ContactsPageState extends State<ContactsPage> {
   List<Map<String, String>> _searchedFriends = [];
 
   void _searchFriends(String query) {
+    if (query.isEmpty) {
+      setState(() {
+        _searchedFriends = []; // 검색 필드가 비어있으면 검색 결과 리스트를 비움
+      });
+      return; // 메서드 종료
+    }
+
     final searchedFriends = friends.where((friend) {
       final nameLower = friend['name']!.toLowerCase();
       final queryLower = query.toLowerCase();
@@ -95,7 +102,7 @@ class _ContactsPageState extends State<ContactsPage> {
             PreferredSize(
           preferredSize: const Size.fromHeight(50),
           child: Padding(
-            padding: const EdgeInsetsDirectional.fromSTEB(10, 0, 10, 0),
+            padding: const EdgeInsetsDirectional.fromSTEB(10, 0, 10, 5),
             child: Row(
               children: [
                 Expanded(
