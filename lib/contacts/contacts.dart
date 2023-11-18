@@ -22,12 +22,6 @@ class _ContactsPageState extends State<ContactsPage> {
       'image':
           'https://cdn.pixabay.com/photo/2016/11/18/23/38/child-1837375_960_720.png'
     },
-    {
-      'name': '이름',
-      'email': 'example@example.com',
-      'image':
-          'https://cdn.pixabay.com/photo/2016/11/18/23/38/child-1837375_960_720.png'
-    },
   ];
 
   @override
@@ -40,66 +34,89 @@ class _ContactsPageState extends State<ContactsPage> {
             IconButton(
                 onPressed: () {}, icon: const Icon(Icons.person_add_alt)),
           ],
+          bottom: // Search Bar
+              PreferredSize(
+            preferredSize: const Size.fromHeight(50),
+            child: Padding(
+              padding: const EdgeInsetsDirectional.fromSTEB(10, 0, 10, 0),
+              child: TextField(
+                decoration: InputDecoration(
+                  hintText: 'Search',
+                  filled: true,
+                  fillColor: Colors.blueGrey[50],
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: BorderSide.none,
+                  ),
+                  prefixIcon: const Icon(Icons.search),
+                ),
+              ),
+            ),
+          ),
         ),
         body: Padding(
-          padding: const EdgeInsetsDirectional.fromSTEB(10, 0, 10, 0),
+          padding: const EdgeInsetsDirectional.fromSTEB(10, 5, 10, 0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Search Bar
-              const Row(
-                children: [
-                  Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: Icon(Icons.search),
-                  ),
-                  Expanded(
-                    child: Padding(
-                      padding: EdgeInsetsDirectional.fromSTEB(5, 0, 0, 5),
-                      child: TextField(
-                        decoration: InputDecoration(
-                          hintText: '검색',
-                          border: InputBorder.none,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(5, 5, 5, 5),
-                  child: Text('내 프로필')),
-              ListTile(
-                leading: const CircleAvatar(
-                  backgroundImage: NetworkImage(
-                      'https://cdn.pixabay.com/photo/2016/11/18/23/38/child-1837375_960_720.png'),
-                ),
-                title: const Text('이름'),
-                subtitle: const Text('전화번호'),
-                trailing: IconButton(
-                  icon: const Icon(Icons.edit),
-                  onPressed: () {},
-                ),
-              ),
-              const Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(5, 5, 5, 5),
-                  child: Text('친구')),
               Expanded(
                 child: ListView.builder(
-                  itemCount: friends.length,
+                  itemCount: friends.length + 1,
                   itemBuilder: (BuildContext context, int index) {
-                    return ListTile(
-                      leading: CircleAvatar(
-                        backgroundImage:
-                            NetworkImage(friends[index]['image'] ?? ''),
-                      ),
-                      title: Text(friends[index]['name'] ?? ''),
-                      subtitle: Text(friends[index]['email'] ?? ''),
-                      // trailing: IconButton(
-                      //   icon: const Icon(Icons.message),
-                      //   onPressed: () {},
-                      // ),
-                    );
+                    if (index == 0) {
+                      return const Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding:
+                                EdgeInsetsDirectional.fromSTEB(0, 10, 0, 5),
+                            child: Text(
+                              '내 프로필',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          ListTile(
+                            leading: CircleAvatar(
+                              backgroundImage: NetworkImage(
+                                  'https://cdn.pixabay.com/photo/2016/11/18/23/38/child-1837375_960_720.png'),
+                            ),
+                            title: Text('내 이름'),
+                            subtitle: Text('나의 이메일'),
+                            trailing: Icon(Icons.edit),
+                          ),
+                          Padding(
+                            padding:
+                                EdgeInsetsDirectional.fromSTEB(0, 10, 0, 5),
+                            child: Text(
+                              '친구',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    } else {
+                      //친구 목록
+                      final int friendIndex =
+                          index - 1; // "내 프로필" 섹션을 제외한 인덱스 조정
+                      return ListTile(
+                        leading: CircleAvatar(
+                          backgroundImage:
+                              NetworkImage(friends[friendIndex]['image'] ?? ''),
+                        ),
+                        title: Text(friends[friendIndex]['name'] ?? ''),
+                        subtitle: Text(friends[friendIndex]['email'] ?? ''),
+                        // trailing: IconButton(
+                        //   icon: Icon(Icons.message),
+                        //   onPressed: () {},
+                        // ),
+                      );
+                    }
                   },
                 ),
               ),
