@@ -9,20 +9,7 @@ class ContactsPage extends StatefulWidget {
 
 class _ContactsPageState extends State<ContactsPage> {
   // freiends data
-  final List<Map<String, String>> friends = [
-    {
-      'name': '이름',
-      'email': 'example@example.com',
-      'image':
-          'https://cdn.pixabay.com/photo/2016/11/18/23/38/child-1837375_960_720.png'
-    },
-    {
-      'name': '이름',
-      'email': 'example@example.com',
-      'image':
-          'https://cdn.pixabay.com/photo/2016/11/18/23/38/child-1837375_960_720.png'
-    },
-  ];
+  final List<Map<String, String>> friends = [];
 
   @override
   Widget build(BuildContext context) {
@@ -41,15 +28,16 @@ class _ContactsPageState extends State<ContactsPage> {
               padding: const EdgeInsetsDirectional.fromSTEB(10, 0, 10, 0),
               child: TextField(
                 decoration: InputDecoration(
-                  hintText: 'Search',
-                  filled: true,
-                  fillColor: Colors.blueGrey[50],
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(30),
-                    borderSide: BorderSide.none,
-                  ),
-                  prefixIcon: const Icon(Icons.search),
-                ),
+                    hintText: '검색',
+                    filled: true,
+                    fillColor: Colors.blueGrey[50],
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30),
+                      borderSide: BorderSide.none,
+                    ),
+                    prefixIcon: const Icon(Icons.search),
+                    contentPadding: const EdgeInsetsDirectional.only(
+                        start: 16, end: 20, top: 0, bottom: 0)),
               ),
             ),
           ),
@@ -61,7 +49,10 @@ class _ContactsPageState extends State<ContactsPage> {
             children: [
               Expanded(
                 child: ListView.builder(
-                  itemCount: friends.length + 1,
+                  itemCount: friends.isEmpty
+                      ? 2
+                      : friends.length +
+                          1, //친구 목록이 비어있으면 아이템 카운트 2, 아니면 친구 목록 + 1
                   itemBuilder: (BuildContext context, int index) {
                     if (index == 0) {
                       return const Column(
@@ -99,6 +90,14 @@ class _ContactsPageState extends State<ContactsPage> {
                             ),
                           ),
                         ],
+                      );
+                    } else if (friends.isEmpty) {
+                      //친구 목록이 비어있을 때
+                      return const Padding(
+                        padding: EdgeInsets.all(20.0),
+                        child: Center(
+                          child: Text('등록된 친구가 없습니다.'),
+                        ),
                       );
                     } else {
                       //친구 목록
