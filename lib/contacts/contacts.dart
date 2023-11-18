@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:chat_tunify/components/add_friend.dart';
 
 class ContactsPage extends StatefulWidget {
   const ContactsPage({super.key});
@@ -70,6 +71,15 @@ class _ContactsPageState extends State<ContactsPage> {
     });
   }
 
+  void _showAddFriendModal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext bc) {
+        return AddFriend();
+      },
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -95,7 +105,8 @@ class _ContactsPageState extends State<ContactsPage> {
         actions: !_isSearchingFocus
             ? [
                 IconButton(
-                    onPressed: () {}, icon: const Icon(Icons.person_add_alt)),
+                    onPressed: () => _showAddFriendModal(context),
+                    icon: const Icon(Icons.person_add_alt)),
               ]
             : null,
         bottom: // Search Bar
