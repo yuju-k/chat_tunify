@@ -117,6 +117,7 @@ class _ContactsPageState extends State<ContactsPage> {
                   onPressed: () {
                     _focusNode.unfocus();
                     _searchTextcontroller.clear();
+                    context.read<ContactsBloc>().add(LoadContacts());
                   },
                   child: const Text('취소'))
               : const SizedBox.shrink(),
