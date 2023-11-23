@@ -1,4 +1,6 @@
+import 'package:chat_tunify/bloc/chat_bloc.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:chat_tunify/auth/create.dart';
 import 'package:chat_tunify/auth/create_profile.dart';
@@ -17,7 +19,12 @@ import 'package:chat_tunify/settings/support.dart';
 import 'package:chat_tunify/settings/terms_service.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    BlocProvider(
+      create: (context) => ChatBloc()..add(LoadChats()),
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
