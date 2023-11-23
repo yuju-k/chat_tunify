@@ -1,4 +1,3 @@
-import 'package:chat_tunify/bloc/chat_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -18,10 +17,20 @@ import 'package:chat_tunify/settings/settings.dart';
 import 'package:chat_tunify/settings/support.dart';
 import 'package:chat_tunify/settings/terms_service.dart';
 
+import 'package:chat_tunify/bloc/chat_bloc.dart';
+import 'package:chat_tunify/bloc/contacts_bloc.dart';
+
 void main() {
   runApp(
-    BlocProvider(
-      create: (context) => ChatBloc()..add(LoadChats()),
+    MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) => ChatBloc()..add(LoadChats()),
+        ),
+        BlocProvider(
+          create: (context) => ContactsBloc()..add(LoadContacts()),
+        ),
+      ],
       child: const MyApp(),
     ),
   );
