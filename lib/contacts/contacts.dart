@@ -19,6 +19,16 @@ class _ContactsPageState extends State<ContactsPage> {
     {
       'image':
           'https://cdn.pixabay.com/photo/2016/11/18/23/38/child-1837375_960_720.png',
+      'name': '이재용',
+    },
+    {
+      'image':
+          'https://cdn.pixabay.com/photo/2016/11/18/23/38/child-1837375_960_720.png',
+      'name': '정계영',
+    },
+    {
+      'image':
+          'https://cdn.pixabay.com/photo/2016/11/18/23/38/child-1837375_960_720.png',
       'name': '박건우',
       'phone': '010-5373-1391',
     },
@@ -74,6 +84,11 @@ class _ContactsPageState extends State<ContactsPage> {
   void _showAddFriendModal(BuildContext context) {
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
+      constraints: BoxConstraints(
+        minHeight: MediaQuery.of(context).size.height * .30,
+        maxHeight: MediaQuery.of(context).size.height * .40,
+      ),
       builder: (BuildContext bc) {
         return AddFriend();
       },
