@@ -36,15 +36,15 @@ class ContactsBloc extends Bloc<ContactsEvent, ContactsState> {
       allContacts = [
         // 여기에 더미 연락처 데이터
         {
-          'user_id': 'chulsu',
-          'name': '김철수',
+          'userId': 'chulsu',
+          'userName': '김철수',
           'phone': '010-1234-5678',
           'email': 'chulsu@example.com',
           'image': 'https://picsum.photos/200/200?random=1',
         },
         {
-          'user_id': 'oppayam1004',
-          'name': '박건우',
+          'userId': 'oppayam1004',
+          'userName': '박건우',
           'phone': '010-1234-5678',
           'email': 'gunwoo@example.com',
           'image': 'https://picsum.photos/200/200?random=2',
@@ -58,7 +58,7 @@ class ContactsBloc extends Bloc<ContactsEvent, ContactsState> {
         emit(ContactsLoaded(allContacts));
       } else {
         final searchResults = allContacts.where((contact) {
-          final nameLower = contact['name']!.toLowerCase();
+          final nameLower = contact['userName']!.toLowerCase();
           final queryLower = event.query.toLowerCase();
           return nameLower.contains(queryLower);
         }).toList();

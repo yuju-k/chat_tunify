@@ -22,10 +22,10 @@ class _ChatPageState extends State<ChatPage> {
         if (state is ChatLoaded && state.selectedChatRoom != null) {
           return Scaffold(
             appBar: AppBar(
-              title: Text(state.selectedChatRoom!.title),
+              title: Text(state.selectedChatRoom!.userName),
             ),
             body: Center(
-              child: Text('채팅방: ${state.selectedChatRoom!.title}'),
+              child: Text('채팅방: ${state.selectedChatRoom!.userName}'),
             ),
           );
         }

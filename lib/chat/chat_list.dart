@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:chat_tunify/bloc/chat_bloc.dart';
+import 'package:chat_tunify/contacts/contacts.dart';
 //import 'package:chat_tunify/chat/chat.dart';
 
 class ChatListPage extends StatefulWidget {
@@ -20,6 +21,14 @@ class _ChatListPageState extends State<ChatListPage> {
           appBar: AppBar(
             title: const Text('대화'),
             centerTitle: false,
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.add), //아이콘추가
+                onPressed: () {
+                  _openContactsPage();
+                },
+              ),
+            ],
           ),
           body: ListView.builder(
               padding: const EdgeInsets.all(5),
@@ -31,8 +40,8 @@ class _ChatListPageState extends State<ChatListPage> {
                   leading: CircleAvatar(
                     backgroundImage: AssetImage(chatRoom.imagePath),
                   ),
-                  title: Text(chatRoom.title),
-                  subtitle: Text(chatRoom.subtitle),
+                  title: Text(chatRoom.userName),
+                  subtitle: Text(chatRoom.lastMessage),
                   trailing: Text(chatRoom.time),
                   onTap: () {
                     context.read<ChatBloc>().add(SelectChat(chatRoom));
@@ -44,5 +53,19 @@ class _ChatListPageState extends State<ChatListPage> {
       }
       return const Center(child: CircularProgressIndicator());
     });
+  }
+
+  void _openContactsPage() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return const Dialog(
+          child: SizedBox(
+            height: 500,
+            child: ContactsPage(),
+          ),
+        );
+      },
+    );
   }
 }
