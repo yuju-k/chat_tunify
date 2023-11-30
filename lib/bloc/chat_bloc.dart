@@ -18,19 +18,9 @@ class ChatRoom {
 }
 
 // **** BLoC 이벤트 **** //
-abstract class ChatEvent {
-  // ...
-}
+abstract class ChatEvent {}
 
-class LoadChats extends ChatEvent {
-  // ...
-}
-
-//채팅방 선택 이벤트
-class SelectChat extends ChatEvent {
-  final ChatRoom selectedChatRoom;
-  SelectChat(this.selectedChatRoom);
-}
+class LoadChats extends ChatEvent {}
 
 //채팅방 생성
 class CreateChat extends ChatEvent {
@@ -44,14 +34,16 @@ class DeleteChat extends ChatEvent {
   DeleteChat(this.chatRoom);
 }
 
-// **** BLoC 상태 **** //
-abstract class ChatState {
-  // ...
+//채팅방 선택 이벤트
+class SelectChat extends ChatEvent {
+  final ChatRoom selectedChatRoom;
+  SelectChat(this.selectedChatRoom);
 }
 
-class ChatInitial extends ChatState {
-  // ...
-}
+// **** BLoC 상태 **** //
+abstract class ChatState {}
+
+class ChatInitial extends ChatState {}
 
 class ChatLoaded extends ChatState {
   final List<ChatRoom> chatRooms;
