@@ -7,6 +7,7 @@ class ChatRoom {
   final String lastMessage;
   final String time;
   final String imagePath;
+  final List<Map<String, String>>? messages;
 
   const ChatRoom({
     required this.userID,
@@ -14,6 +15,7 @@ class ChatRoom {
     required this.lastMessage,
     required this.time,
     required this.imagePath,
+    this.messages,
   });
 }
 
@@ -67,14 +69,23 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         userName: '박건우',
         lastMessage: '채팅방 2의 마지막 대화 내용',
         time: '11:00',
-        imagePath: 'assets/images/1.jpeg',
+        imagePath: 'https://picsum.photos/200/200?random=7',
+        messages: [
+          ({'message': '안녕하세요', 'time': '10:00'}),
+          ({'message': '메세지2', 'time': '10:01'}),
+          ({'message': '메세지3', 'time': '10:02'}),
+          ({'message': '메세지4', 'time': '10:03'}),
+          ({'message': '메세지5', 'time': '10:04'}),
+          ({'message': '메세지6', 'time': '10:05'}),
+          ({'message': '메세지7', 'time': '10:06'}),
+        ],
       ),
       const ChatRoom(
         userID: 'oppayam1005',
-        userName: '박견우',
+        userName: '박건우2',
         lastMessage: '채팅방 3의 마지막 대화 내용',
         time: '12:00',
-        imagePath: 'assets/images/1.jpeg',
+        imagePath: 'https://picsum.photos/200/200?random=3',
       ),
     ];
     emit(ChatLoaded(chatRooms: chatRooms));
@@ -82,6 +93,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
 
   void _onSelectChat(SelectChat event, Emitter<ChatState> emit) {
     // 채팅방을 선택하는 로직
+    // 데이터베이스에서 채팅방 정보를 불러온다(?)
     emit(ChatLoaded(
       chatRooms: (state as ChatLoaded).chatRooms,
       selectedChatRoom: event.selectedChatRoom,

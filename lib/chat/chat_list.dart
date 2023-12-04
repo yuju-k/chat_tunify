@@ -38,7 +38,7 @@ class _ChatListPageState extends State<ChatListPage> {
                 final chatRoom = state.chatRooms[index];
                 return ListTile(
                   leading: CircleAvatar(
-                    backgroundImage: AssetImage(chatRoom.imagePath),
+                    backgroundImage: NetworkImage(chatRoom.imagePath),
                   ),
                   title: Text(chatRoom.userName),
                   subtitle: Text(chatRoom.lastMessage),

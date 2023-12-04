@@ -88,6 +88,7 @@ class _ContactsPageState extends State<ContactsPage> {
     );
   }
 
+  //검색창 위젯
   Widget _buildSearchBar() {
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(10, 0, 10, 5),
@@ -136,7 +137,7 @@ class _ContactsPageState extends State<ContactsPage> {
     );
   }
 
-  // 연락처 목록을 보여주는 위젯
+  // 연락처 목록 위젯
   Widget _buildContactsView(List<Map<String, String>> contacts) {
     return ListView.builder(
       itemCount: contacts.length,
@@ -147,7 +148,7 @@ class _ContactsPageState extends State<ContactsPage> {
             // 프로필 사진
             backgroundImage: NetworkImage(contact['image'] ?? ''),
           ),
-          title: Text(contact['name'] ?? ''), // 이름
+          title: Text(contact['userName'] ?? ''), // 이름
           //subtitle: Text(contact['phone'] ?? ''), // 전화번호
           onTap: () {
             // 연락처를 누르면 채팅방으로 이동
@@ -170,7 +171,7 @@ class _ContactsPageState extends State<ContactsPage> {
               //아니라면 새로운 채팅방을 생성한다.
               final newChatRoom = ChatRoom(
                 userID: contactUserId ?? '',
-                userName: contact['name'] ?? '',
+                userName: contact['userName'] ?? '',
                 lastMessage: '새로운 대화 시작', // or any initial message
                 time: DateFormat('HH:mm').format(DateTime.now()),
                 imagePath: contact['image'] ?? '',
