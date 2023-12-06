@@ -118,7 +118,7 @@ class _ChatPageState extends State<ChatPage> {
       {
         'imagePath': 'https://picsum.photos/250?image=9',
         'userName': '박건우',
-        'messages': '천재!',
+        'messages': '천재! @@@@@@@@@@@ 줄바꿈@@@##!!@@@ 줄바꿈 줄바꿈 줄바꿈 줄바꿈 줄바꿈 줄바꿈',
         'originalMessages': '바보! 줄바꿈 줄바꿈 줄바꿈 줄바꿈 줄바꿈 줄바꿈 줄바꿈 줄바꿈',
         'time': '오후 3:00',
         'isMe': false,
@@ -172,7 +172,18 @@ class _ChatPageState extends State<ChatPage> {
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(userName, style: const TextStyle(fontSize: 13)),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(userName, style: const TextStyle(fontSize: 15)),
+                        isTransMessage ? _transMessageYes() : const SizedBox(),
+                        const Spacer(),
+                        isTransMessage
+                            ? _originalMessageButton(originalMessages, messages)
+                            : const SizedBox(),
+                      ],
+                    ),
                     const SizedBox(height: 3),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -211,146 +222,163 @@ class _ChatPageState extends State<ChatPage> {
     );
   }
 
-  Widget _viewMessage(
-      String messages, String originalMessages, bool isTransMessage) {
-    void showAlert(BuildContext context) {
-      // showDialog(
-      //   context: context,
-      //   builder: (BuildContext context) {
-      //     return AlertDialog(
-      //       title: const Text('원본메시지 : ', style: TextStyle(fontSize: 14)),
-      //       content: Text(originalMessages),
-      //       actions: <Widget>[
-      //         TextButton(
-      //           child: const Text('Close'),
-      //           onPressed: () {
-      //             Navigator.of(context).pop();
-      //           },
-      //         ),
-      //       ],
-      //     );
-      //   },
-      // );
-      // SnackBar
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.only(bottom: 80, left: 10, right: 10),
-          content: RichText(
-            text: TextSpan(
-              text: '[원본메시지]\n',
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-              ),
-              children: <TextSpan>[
-                TextSpan(
-                  text: originalMessages,
-                  style: const TextStyle(
-                    fontSize: 14,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          duration: const Duration(seconds: 3),
-          action: SnackBarAction(
-            label: '닫기',
-            onPressed: () {},
-          ),
+  Widget _transMessageYes() {
+    //변환된메시지 맞으면 이름 옆에 아이콘 표시하는 위젯
+    return const Row(
+      children: [
+        SizedBox(width: 5),
+        Icon(Icons.published_with_changes_sharp,
+            size: 12, color: Colors.indigoAccent),
+        SizedBox(width: 1),
+        Text(
+          "변환된 메시지",
+          style: TextStyle(color: Colors.indigoAccent, fontSize: 12),
         ),
-      );
-    }
-
-    return Expanded(
-      child: isTransMessage
-          ? InkWell(
-              onTap: () {
-                _focusNode.unfocus(); // 텍스트필드 포커스 해제
-                showAlert(context);
-              },
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Text(
-                    messages,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      color: Colors.indigo,
-                      //점선밑줄
-                      //decoration: TextDecoration.underline,
-                      decorationStyle: TextDecorationStyle.dotted,
-                      decorationColor: Colors.indigo,
-                    ),
-                  ),
-                  const SizedBox(width: 5),
-                  const Icon(
-                    Icons.published_with_changes_sharp,
-                    size: 15,
-                    color: Colors.indigoAccent,
-                  ),
-                ],
-              ))
-          : Text(
-              messages,
-              style: const TextStyle(
-                fontSize: 15,
-                color: Colors.black,
-              ),
-            ),
+      ],
     );
   }
 
-  // Widget _originalMessageButton(String originalMessages) {
-  //   void showAlert(BuildContext context) {
-  //     showDialog(
-  //       context: context,
-  //       builder: (BuildContext context) {
-  //         return AlertDialog(
-  //           title: const Text('원본메시지 : ', style: TextStyle(fontSize: 14)),
-  //           content: Text(originalMessages),
-  //           actions: <Widget>[
-  //             TextButton(
-  //               child: const Text('Close'),
-  //               onPressed: () {
-  //                 Navigator.of(context).pop();
-  //               },
-  //             ),
-  //           ],
-  //         );
-  //       },
-  //     );
-  //   }
+  //메시지 보여주기
+  Widget _viewMessage(
+      String messages, String originalMessages, bool isTransMessage) {
+    //** */
+    //**SnackBar로 원본 메시지 보여주기//** */
+    // void showSnackbar(BuildContext context) {
+    //   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+    //       behavior: SnackBarBehavior.floating,
+    //       margin: const EdgeInsets.only(bottom: 80, left: 10, right: 10),
+    //       content: RichText(
+    //           text: TextSpan(
+    //         text: '[원본메시지]\n',
+    //         style: const TextStyle(
+    //           fontSize: 14,
+    //           fontWeight: FontWeight.bold,
+    //         ),
+    //         children: <TextSpan>[
+    //           TextSpan(
+    //               text: originalMessages,
+    //               style: const TextStyle(
+    //                 fontSize: 14,
+    //               ))
+    //         ],
+    //       )),
+    //       duration: const Duration(seconds: 3),
+    //       action: SnackBarAction(
+    //         label: '닫기',
+    //         onPressed: () {},
+    //       )));
+    // }
+    //** */
 
-  //   return TextButton(
-  //     style: TextButton.styleFrom(
-  //       padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 0),
-  //       minimumSize: const Size(0, 0),
-  //     ),
-  //     onPressed: () {
-  //       _focusNode.unfocus(); // 텍스트필드 포커스 해제
-  //       showAlert(context);
-  //     },
-  //     child: const Row(
-  //       children: [
-  //         Icon(
-  //           Icons.trip_origin,
-  //           size: 12,
-  //           color: Colors.indigo,
-  //         ),
-  //         SizedBox(width: 5),
-  //         Text(
-  //           '원본메시지 확인',
-  //           style: TextStyle(
-  //             fontSize: 12,
-  //             color: Colors.indigo,
-  //           ),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
+    return Expanded(
+      child: Text(
+        messages,
+        style: const TextStyle(
+          fontSize: 16,
+          color: Colors.black,
+        ),
+      ),
+    );
+
+    //** 메시지 색상 변경 및 아이콘 표시해서 보여주는 버전 */
+    // return Expanded(
+    //   child: isTransMessage
+    //       ? InkWell(
+    //           onTap: () {
+    //             _focusNode.unfocus(); // 텍스트필드 포커스 해제
+    //             showSnackbar(context);
+    //           },
+    //           child: Row(
+    //             mainAxisAlignment: MainAxisAlignment.start,
+    //             crossAxisAlignment: CrossAxisAlignment.center,
+    //             children: [
+    //               Text(
+    //                 messages,
+    //                 style: const TextStyle(
+    //                   fontSize: 15,
+    //                   color: Colors.indigo,
+    //                   //점선밑줄
+    //                   //decoration: TextDecoration.underline,
+    //                   decorationStyle: TextDecorationStyle.dotted,
+    //                   decorationColor: Colors.indigo,
+    //                 ),
+    //               ),
+    //               const SizedBox(width: 5),
+    //               const Icon(
+    //                 Icons.published_with_changes_sharp,
+    //                 size: 15,
+    //                 color: Colors.indigoAccent,
+    //               ),
+    //             ],
+    //           ))
+    //       : Text(
+    //           messages,
+    //           style: const TextStyle(
+    //             fontSize: 15,
+    //             color: Colors.black,
+    //           ),
+    //         ),
+    // );
+  }
+
+  Widget _originalMessageButton(String originalMessages, String transMessages) {
+    void showAlert(BuildContext context) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Row(
+              children: [
+                Icon(Icons.visibility, size: 15, color: Colors.deepPurple),
+                SizedBox(width: 5),
+                Text("원본 보기",
+                    style: TextStyle(fontSize: 15, color: Colors.deepPurple)),
+              ],
+            ),
+            content: //받은 메시지(transMessage)와 원본메시지 표시
+                Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                RichText(
+                  text: TextSpan(children: <TextSpan>[
+                    TextSpan(
+                        text: originalMessages,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.black,
+                        )),
+                  ]),
+                ),
+              ],
+            ),
+            actions: <Widget>[
+              TextButton(
+                child: const Text('닫기'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
+
+    return InkWell(
+        onTap: () {
+          _focusNode.unfocus(); // 텍스트필드 포커스 해제
+          showAlert(context);
+        },
+        child: const Row(
+          children: [
+            Text("원본 보기",
+                style: TextStyle(fontSize: 12, color: Colors.deepPurple)),
+            SizedBox(width: 3),
+            Icon(Icons.visibility, size: 15, color: Colors.deepPurple),
+          ],
+        ));
+  }
 
   // 메시지 입력창
   Widget _inputMessage() {
