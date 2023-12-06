@@ -16,7 +16,7 @@ class _ChatPageState extends State<ChatPage> {
   bool onlyTransVerifyMode = false; //변환메시지확인 가능모드 활성화?
   bool originalVerifyMode = true; //오리지날메시지모드 활성화?
 
-  bool isMenuBoxVisual = false; //플러스버튼 터치여부
+  bool isMenuBoxVisual = false; // 플러스버튼 누르면 메뉴박스보이고, 다시 누르면 메뉴박스 안보이게하기 위한 변수
 
   @override
   void initState() {
@@ -49,50 +49,26 @@ class _ChatPageState extends State<ChatPage> {
             ),
             body: GestureDetector(
               onTap: () {
-                // 텍스트필드 포커스 해제
-                _focusNode.unfocus();
+                _focusNode.unfocus(); // 텍스트필드 포커스 해제
 
-                // 메뉴창 닫기
                 setState(() {
-                  isMenuBoxVisual = false;
+                  isMenuBoxVisual = false; // 메뉴창 닫기
                 });
               },
-              child: Center(
-                child: Container(
-                  color: Colors.grey[200],
-                  child: Column(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          children: [
-                            _buildMessageList(
-                                "https://picsum.photos/200/200?random=4",
-                                "박건우",
-                                "낚시갈꺼야!",
-                                "03:00",
-                                false,
-                                false),
-                            _buildMessageList(
-                                "https://picsum.photos/200/200?random=3",
-                                "나",
-                                "않대!",
-                                "03:00",
-                                true,
-                                false),
-                            _buildMessageList(
-                                "https://picsum.photos/200/200?random=4",
-                                "박건우",
-                                "왜 않돼!",
-                                "03:02",
-                                false,
-                                true),
-                          ],
-                        ),
-                      ),
-                      _inputMessage(),
-                      isMenuBoxVisual ? _menuBox() : const SizedBox(),
-                    ],
-                  ),
+              child: Container(
+                color: Colors.grey[200],
+                child: Stack(
+                  children: [
+                    Positioned.fill(
+                      child: _messageList(),
+                    ),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        _bottomMenu(),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -103,19 +79,91 @@ class _ChatPageState extends State<ChatPage> {
     );
   }
 
+  Widget _bottomMenu() {
+    return Container(
+      color: Colors.white,
+      child: Column(
+        children: [
+          _inputMessage(),
+          isMenuBoxVisual ? _menuBox() : const SizedBox(),
+          _focusNode.hasFocus
+              ? const SizedBox()
+              : SizedBox(height: MediaQuery.of(context).size.height * 0.05),
+        ],
+      ),
+    );
+  }
+
+  Widget _messageList() {
+    // 더미데이터
+    List<Map<String, dynamic>> dummyData = [
+      {
+        'imagePath': 'https://picsum.photos/250?image=9',
+        'userName': '박건우',
+        'messages': '안녕하세요.',
+        'originalMessages': '',
+        'time': '오후 3:00',
+        'isMe': false,
+        'isTransMessage': false,
+      },
+      {
+        'imagePath': 'https://picsum.photos/250?image=9',
+        'userName': '박건우',
+        'messages': '천재',
+        'originalMessages': '바보',
+        'time': '오후 3:00',
+        'isMe': false,
+        'isTransMessage': true,
+      },
+      {
+        'imagePath': 'https://picsum.photos/250?image=9',
+        'userName': '박건우',
+        'messages': '천재!',
+        'originalMessages': '바보! 줄바꿈 줄바꿈 줄바꿈 줄바꿈 줄바꿈 줄바꿈 줄바꿈 줄바꿈',
+        'time': '오후 3:00',
+        'isMe': false,
+        'isTransMessage': true,
+      },
+      {
+        'imagePath': 'https://picsum.photos/250?image=10',
+        'userName': '강유주',
+        'messages': '헉 12341234123413413413413413414134',
+        'originalMessages': '',
+        'time': '오후 3:00',
+        'isMe': true,
+        'isTransMessage': false,
+      },
+    ];
+
+    return ListView.builder(
+      itemCount: dummyData.length,
+      itemBuilder: (context, index) {
+        return _buildMessageList(
+          dummyData[index]['imagePath'],
+          dummyData[index]['userName'],
+          dummyData[index]['messages'],
+          dummyData[index]['originalMessages'],
+          dummyData[index]['time'],
+          dummyData[index]['isMe'],
+          dummyData[index]['isTransMessage'],
+        );
+      },
+    );
+  }
+
   Widget _buildMessageList(String imagePath, String userName, String messages,
-      String time, bool isMe, bool isTransMessage) {
-    // 상대방이 보낸 메시지 (isMe가 false일 때)
+      String originalMessages, String time, bool isMe, bool isTransMessage) {
     return Container(
       padding: const EdgeInsets.fromLTRB(15, 10, 15, 10),
-      color: !isMe ? Colors.grey[100] : Colors.white,
+      color: !isMe ? Colors.indigo[50] : Colors.grey[50],
       child: Column(
         children: [
           // 프로필 사진과 메시지, 시간을 나타내는 Row
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               CircleAvatar(
-                radius: 23,
+                radius: 20,
                 backgroundImage: NetworkImage(imagePath),
               ),
               const SizedBox(width: 10),
@@ -126,62 +174,183 @@ class _ChatPageState extends State<ChatPage> {
                   children: [
                     Text(userName, style: const TextStyle(fontSize: 13)),
                     const SizedBox(height: 3),
-                    Text(
-                      messages,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        color: Colors.black,
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _viewMessage(
+                            messages, originalMessages, isTransMessage),
+                        Padding(
+                          padding: const EdgeInsetsDirectional.symmetric(
+                              horizontal: 5),
+                          child: Text(
+                            time,
+                            style: TextStyle(
+                                color: Colors.grey[600], fontSize: 12),
+                          ),
+                        ),
+                      ],
                     ),
+                    // isTransMessage //변환된메시지인가? 변환된메시지이면, '원본메시지 확인' 버튼을 보여준다.
+                    //     ? Row(
+                    //         mainAxisAlignment: MainAxisAlignment.end,
+                    //         children: [
+                    //           originalVerifyMode //오리지날메시지모드 활성화?
+                    //               ? _originalMessageButton(originalMessages)
+                    //               : const SizedBox(),
+                    //         ],
+                    //       )
+                    //     : const SizedBox(),
                   ],
                 ),
               ),
-              Text(
-                time,
-                style: TextStyle(color: Colors.grey[600], fontSize: 12),
-              ),
             ],
           ),
-          isTransMessage //변환된메시지인가? 변환된메시지이면, '원본메시지 확인' 버튼을 보여준다.
-              ? Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    // onlyTransVerifyMode //변환메시지확인 가능모드 활성화?
-                    //     ? const Icon(
-                    //         Icons.trip_origin,
-                    //         size: 12,
-                    //         color: Colors.indigo,
-                    //       )
-                    //     : const SizedBox(),
-                    originalVerifyMode //오리지날메시지모드 활성화?
-                        ? ElevatedButton(
-                            onPressed: () {},
-                            child: const Row(
-                              children: [
-                                Icon(
-                                  Icons.trip_origin,
-                                  size: 12,
-                                  color: Colors.indigo,
-                                ),
-                                SizedBox(width: 5),
-                                Text(
-                                  '원본메시지 확인',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.indigo,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          )
-                        : const SizedBox(),
-                  ],
-                )
-              : const SizedBox(),
         ],
       ),
     );
   }
+
+  Widget _viewMessage(
+      String messages, String originalMessages, bool isTransMessage) {
+    void showAlert(BuildContext context) {
+      // showDialog(
+      //   context: context,
+      //   builder: (BuildContext context) {
+      //     return AlertDialog(
+      //       title: const Text('원본메시지 : ', style: TextStyle(fontSize: 14)),
+      //       content: Text(originalMessages),
+      //       actions: <Widget>[
+      //         TextButton(
+      //           child: const Text('Close'),
+      //           onPressed: () {
+      //             Navigator.of(context).pop();
+      //           },
+      //         ),
+      //       ],
+      //     );
+      //   },
+      // );
+      // SnackBar
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.only(bottom: 80, left: 10, right: 10),
+          content: RichText(
+            text: TextSpan(
+              text: '[원본메시지]\n',
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
+              children: <TextSpan>[
+                TextSpan(
+                  text: originalMessages,
+                  style: const TextStyle(
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          duration: const Duration(seconds: 3),
+          action: SnackBarAction(
+            label: '닫기',
+            onPressed: () {},
+          ),
+        ),
+      );
+    }
+
+    return Expanded(
+      child: isTransMessage
+          ? InkWell(
+              onTap: () {
+                _focusNode.unfocus(); // 텍스트필드 포커스 해제
+                showAlert(context);
+              },
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    messages,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      color: Colors.indigo,
+                      //점선밑줄
+                      //decoration: TextDecoration.underline,
+                      decorationStyle: TextDecorationStyle.dotted,
+                      decorationColor: Colors.indigo,
+                    ),
+                  ),
+                  const SizedBox(width: 5),
+                  const Icon(
+                    Icons.published_with_changes_sharp,
+                    size: 15,
+                    color: Colors.indigoAccent,
+                  ),
+                ],
+              ))
+          : Text(
+              messages,
+              style: const TextStyle(
+                fontSize: 15,
+                color: Colors.black,
+              ),
+            ),
+    );
+  }
+
+  // Widget _originalMessageButton(String originalMessages) {
+  //   void showAlert(BuildContext context) {
+  //     showDialog(
+  //       context: context,
+  //       builder: (BuildContext context) {
+  //         return AlertDialog(
+  //           title: const Text('원본메시지 : ', style: TextStyle(fontSize: 14)),
+  //           content: Text(originalMessages),
+  //           actions: <Widget>[
+  //             TextButton(
+  //               child: const Text('Close'),
+  //               onPressed: () {
+  //                 Navigator.of(context).pop();
+  //               },
+  //             ),
+  //           ],
+  //         );
+  //       },
+  //     );
+  //   }
+
+  //   return TextButton(
+  //     style: TextButton.styleFrom(
+  //       padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 0),
+  //       minimumSize: const Size(0, 0),
+  //     ),
+  //     onPressed: () {
+  //       _focusNode.unfocus(); // 텍스트필드 포커스 해제
+  //       showAlert(context);
+  //     },
+  //     child: const Row(
+  //       children: [
+  //         Icon(
+  //           Icons.trip_origin,
+  //           size: 12,
+  //           color: Colors.indigo,
+  //         ),
+  //         SizedBox(width: 5),
+  //         Text(
+  //           '원본메시지 확인',
+  //           style: TextStyle(
+  //             fontSize: 12,
+  //             color: Colors.indigo,
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   // 메시지 입력창
   Widget _inputMessage() {
@@ -195,9 +364,7 @@ class _ChatPageState extends State<ChatPage> {
                   onPressed: () {
                     setState(() {
                       isMenuBoxVisual = false; //메뉴창을 닫는다.
-                      Future.delayed(const Duration(milliseconds: 100), () {
-                        _focusNode.requestFocus(); //포커스를 준다.
-                      });
+                      _focusNode.requestFocus(); //포커스를 준다.
                     });
                   },
                   icon: const Icon(Icons.close),
@@ -205,20 +372,13 @@ class _ChatPageState extends State<ChatPage> {
               : IconButton(
                   onPressed: () {
                     if (_focusNode.hasFocus) {
-                      // 포커스 해제
-                      _focusNode.unfocus();
-
-                      // 포커스 해제 후 약간의 지연을 추가
-                      Future.delayed(const Duration(milliseconds: 100), () {
-                        setState(() {
-                          // 메뉴창을 연다
-                          isMenuBoxVisual = true;
-                        });
+                      _focusNode.unfocus(); // 포커스 해제
+                      setState(() {
+                        isMenuBoxVisual = true; // 메뉴창을 연다
                       });
                     } else {
                       setState(() {
-                        // 메뉴창을 연다
-                        isMenuBoxVisual = true;
+                        isMenuBoxVisual = true; // 메뉴창을 연다
                       });
                     }
                   },
@@ -300,32 +460,6 @@ class _ChatPageState extends State<ChatPage> {
                 children: [
                   Icon(Icons.camera_alt, size: 35),
                   Text('카메라'),
-                ],
-              ),
-            ),
-          ),
-          IconButton(
-            onPressed: () {},
-            icon: const SizedBox(
-              height: 60,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.mic, size: 35),
-                  Text('음성메시지'),
-                ],
-              ),
-            ),
-          ),
-          IconButton(
-            onPressed: () {},
-            icon: const SizedBox(
-              height: 60,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.location_on, size: 35),
-                  Text('위치'),
                 ],
               ),
             ),
