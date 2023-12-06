@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:chat_tunify/bloc/contacts_bloc.dart';
 import 'package:chat_tunify/bloc/chat_bloc.dart';
-import 'package:chat_tunify/components/add_friend.dart';
+import 'package:chat_tunify/contacts/add_friend.dart';
 import 'package:intl/intl.dart';
 import 'package:collection/collection.dart';
 

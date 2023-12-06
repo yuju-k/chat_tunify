@@ -202,16 +202,6 @@ class _ChatPageState extends State<ChatPage> {
                         ),
                       ],
                     ),
-                    // isTransMessage //변환된메시지인가? 변환된메시지이면, '원본메시지 확인' 버튼을 보여준다.
-                    //     ? Row(
-                    //         mainAxisAlignment: MainAxisAlignment.end,
-                    //         children: [
-                    //           originalVerifyMode //오리지날메시지모드 활성화?
-                    //               ? _originalMessageButton(originalMessages)
-                    //               : const SizedBox(),
-                    //         ],
-                    //       )
-                    //     : const SizedBox(),
                   ],
                 ),
               ),
@@ -435,13 +425,14 @@ class _ChatPageState extends State<ChatPage> {
                       textCapitalization: TextCapitalization.sentences,
                     ),
                   ),
-                  //이모지
+                  //이모지 버튼
                   IconButton(
                     onPressed: () {
                       //show emoji keyboard
                     },
                     icon: const Icon(Icons.emoji_emotions_outlined),
                   ),
+                  //보내기 버튼
                   IconButton(
                     onPressed: () {},
                     icon: const Icon(Icons.send),
