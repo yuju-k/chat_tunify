@@ -10,9 +10,10 @@ class TermsServicePage extends StatefulWidget {
 class _TermsServicePageState extends State<TermsServicePage> {
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-        body: Center(
-      child: Text('Terms Service Page'),
-    ));
+    return Scaffold(
+        appBar: AppBar(),
+        body: const Center(
+          child: Text('Terms Service Page'),
+        ));
   }
 }

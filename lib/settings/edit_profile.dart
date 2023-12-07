@@ -13,9 +13,9 @@ class _EditProfileState extends State<EditProfile> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Center(child: ProfileComponent()),
+      body: const Padding(
+        padding: EdgeInsets.all(20.0),
+        child: ProfileComponent(),
       ),
     );
   }

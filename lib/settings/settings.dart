@@ -106,22 +106,30 @@ class _SettingsPageState extends State<SettingsPage> {
         ListTile(
           leading: const Icon(Icons.notifications),
           title: const Text('알림 설정'),
-          onTap: () {},
+          onTap: () {
+            Navigator.pushNamed(context, '/notification');
+          },
         ),
         ListTile(
           leading: const Icon(Icons.privacy_tip),
           title: const Text('개인정보 처리방침'),
-          onTap: () {},
+          onTap: () {
+            Navigator.pushNamed(context, '/terms_service');
+          },
         ),
         ListTile(
           leading: const Icon(Icons.info),
           title: const Text('앱 정보'),
-          onTap: () {},
+          onTap: () {
+            Navigator.pushNamed(context, '/support');
+          },
         ),
         ListTile(
           leading: const Icon(Icons.logout),
           title: const Text('로그아웃'),
-          onTap: () {},
+          onTap: () {
+            //TODO: 로그아웃 기능 구현
+          },
         ),
       ],
     );
