@@ -50,30 +50,28 @@ class _ChatPageState extends State<ChatPage> {
             appBar: AppBar(
               title: Text(state.selectedChatRoom!.userName), //유저이름
             ),
-            body: GestureDetector(
-              onTap: () {
-                _focusNode.unfocus(); // 텍스트필드 포커스 해제
+            body: Container(
+              color: Colors.grey[200],
+              child: Stack(
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      _focusNode.unfocus(); // 텍스트필드 포커스 해제
 
-                setState(() {
-                  isMenuBoxVisual = false; // 메뉴창 닫기
-                  isRecommandMessageVisual = false; // 추천메시지 닫기
-                });
-              },
-              child: Container(
-                color: Colors.grey[200],
-                child: Stack(
-                  children: [
-                    Positioned.fill(
-                      child: _messageList(),
-                    ),
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        _bottomMenu(),
-                      ],
-                    ),
-                  ],
-                ),
+                      setState(() {
+                        isMenuBoxVisual = false; // 메뉴창 닫기
+                        isRecommandMessageVisual = false; // 추천메시지 닫기
+                      });
+                    },
+                    child: _messageList(),
+                  ),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      _bottomMenu(),
+                    ],
+                  ),
+                ],
               ),
             ),
           );
