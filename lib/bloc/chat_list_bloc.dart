@@ -50,43 +50,18 @@ class ChatInitial extends ChatState {}
 class ChatLoaded extends ChatState {
   final List<ChatRoom> chatRooms;
   final ChatRoom? selectedChatRoom;
-  final bool isMenuBoxVisible;
-  final bool isRecommandMessageVisible;
 
   ChatLoaded({
     required this.chatRooms,
     this.selectedChatRoom,
-    this.isMenuBoxVisible = false,
-    this.isRecommandMessageVisible = false,
   });
-
-  ChatLoaded copyWith({
-    List<ChatRoom>? chatRooms,
-    ChatRoom? selectedChatRoom,
-    bool? isMenuBoxVisible,
-    bool? isRecommandMessageVisible,
-  }) {
-    return ChatLoaded(
-      chatRooms: chatRooms ?? this.chatRooms,
-      selectedChatRoom: selectedChatRoom ?? this.selectedChatRoom,
-      isMenuBoxVisible: isMenuBoxVisible ?? this.isMenuBoxVisible,
-      isRecommandMessageVisible:
-          isRecommandMessageVisible ?? this.isRecommandMessageVisible,
-    );
-  }
 }
-
-class ToggleMenuBoxVisibility extends ChatEvent {}
-
-class ToggleRecommandMessageVisibility extends ChatEvent {}
 
 // **** BLoC **** //
 class ChatBloc extends Bloc<ChatEvent, ChatState> {
   ChatBloc() : super(ChatInitial()) {
     on<LoadChats>(_onLoadChats);
     on<SelectChat>(_onSelectChat);
-    on<ToggleMenuBoxVisibility>(_onToggleMenuBoxSisibility);
-    on<ToggleRecommandMessageVisibility>(_onToggleRecommandMessageVisibility);
   }
 
   void _onLoadChats(LoadChats event, Emitter<ChatState> emit) {
@@ -126,24 +101,5 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       chatRooms: (state as ChatLoaded).chatRooms,
       selectedChatRoom: event.selectedChatRoom,
     ));
-  }
-
-  void _onToggleMenuBoxSisibility(
-      ToggleMenuBoxVisibility event, Emitter<ChatState> emit) {
-    if (state is ChatLoaded) {
-      emit((state as ChatLoaded).copyWith(
-        isMenuBoxVisible: !(state as ChatLoaded).isMenuBoxVisible,
-      ));
-    }
-  }
-
-  void _onToggleRecommandMessageVisibility(
-      ToggleRecommandMessageVisibility event, Emitter<ChatState> emit) {
-    if (state is ChatLoaded) {
-      emit((state as ChatLoaded).copyWith(
-        isRecommandMessageVisible:
-            !(state as ChatLoaded).isRecommandMessageVisible,
-      ));
-    }
   }
 }

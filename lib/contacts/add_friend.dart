@@ -12,6 +12,7 @@ class _AddFriendState extends State<AddFriend> {
 
   void _addFriend() {
     // Add friend logic here
+    // ignore: avoid_print
     print('Adding friend: $_friendName');
 
     // ContactsPage() Reloads

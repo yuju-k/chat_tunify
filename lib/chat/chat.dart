@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'package:chat_tunify/bloc/chat_bloc.dart';
+import 'package:chat_tunify/bloc/chat_list_bloc.dart';
 import 'package:chat_tunify/chat/recommand_message.dart';
 
 class ChatPage extends StatefulWidget {
@@ -26,8 +26,10 @@ class _ChatPageState extends State<ChatPage> {
 
     _focusNode.addListener(() {
       if (_focusNode.hasFocus) {
-        context.read<ChatBloc>().add(ToggleMenuBoxVisibility());
-        context.read<ChatBloc>().add(ToggleRecommandMessageVisibility());
+        setState(() {
+          isMenuBoxVisual = false; // 메뉴창 닫기
+          isRecommandMessageVisual = false; // 추천메시지 닫기
+        });
       }
     });
   }
@@ -40,41 +42,42 @@ class _ChatPageState extends State<ChatPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ChatBloc, ChatState>(
-      builder: (context, state) {
-        if (state is ChatLoaded && state.selectedChatRoom != null) {
-          return Scaffold(
-            appBar: AppBar(
-              title: Text(state.selectedChatRoom!.userName), //유저이름
-            ),
-            body: Container(
-              color: Colors.grey[200],
-              child: Stack(
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      _focusNode.unfocus(); // 텍스트필드 포커스 해제
+    return Scaffold(
+      appBar: AppBar(
+        title: BlocBuilder<ChatBloc, ChatState>(
+          builder: (context, state) {
+            if (state is ChatLoaded && state.selectedChatRoom != null) {
+              return Text(state.selectedChatRoom!.userName);
+            } else {
+              return const Text('채팅');
+            }
+          },
+        ), //유저이름
+      ),
+      body: Container(
+        color: Colors.grey[200],
+        child: Stack(
+          children: [
+            GestureDetector(
+              onTap: () {
+                _focusNode.unfocus(); // 텍스트필드 포커스 해제
 
-                      setState(() {
-                        isMenuBoxVisual = false; // 메뉴창 닫기
-                        isRecommandMessageVisual = false; // 추천메시지 닫기
-                      });
-                    },
-                    child: _messageList(),
-                  ),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      _bottomMenu(),
-                    ],
-                  ),
-                ],
-              ),
+                setState(() {
+                  isMenuBoxVisual = false; // 메뉴창 닫기
+                  isRecommandMessageVisual = false; // 추천메시지 닫기
+                });
+              },
+              child: _messageList(),
             ),
-          );
-        }
-        return const Center(child: Text('채팅방을 선택해주세요'));
-      },
+            Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                _bottomMenu(),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -422,7 +425,7 @@ class _ChatPageState extends State<ChatPage> {
         color: Colors.white,
         border: Border.all(color: Colors.grey[300]!),
       ),
-      child: RecommandMessageList(),
+      child: const RecommandMessageList(),
     );
   }
 

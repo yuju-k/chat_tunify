@@ -17,7 +17,7 @@ import 'package:chat_tunify/settings/settings.dart';
 import 'package:chat_tunify/settings/support.dart';
 import 'package:chat_tunify/settings/terms_service.dart';
 
-import 'package:chat_tunify/bloc/chat_bloc.dart';
+import 'package:chat_tunify/bloc/chat_list_bloc.dart';
 import 'package:chat_tunify/bloc/contacts_bloc.dart';
 
 void main() {

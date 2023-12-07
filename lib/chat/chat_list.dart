@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'package:chat_tunify/bloc/chat_bloc.dart';
+import 'package:chat_tunify/bloc/chat_list_bloc.dart';
 import 'package:chat_tunify/contacts/contacts.dart';
 //import 'package:chat_tunify/chat/chat.dart';
 
