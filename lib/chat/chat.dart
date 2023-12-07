@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:chat_tunify/bloc/chat_bloc.dart';
+import 'package:chat_tunify/chat/recommand_message.dart';
 
 class ChatPage extends StatefulWidget {
   const ChatPage({super.key});
@@ -17,6 +18,7 @@ class _ChatPageState extends State<ChatPage> {
   bool originalVerifyMode = true; //오리지날메시지모드 활성화?
 
   bool isMenuBoxVisual = false; // 플러스버튼 누르면 메뉴박스보이고, 다시 누르면 메뉴박스 안보이게하기 위한 변수
+  bool isRecommandMessageVisual = false; // 추천메시지 보이기
 
   @override
   void initState() {
@@ -27,6 +29,7 @@ class _ChatPageState extends State<ChatPage> {
         // TextField가 포커스를 받으면 isMenuBoxVisual를 false로 설정
         setState(() {
           isMenuBoxVisual = false;
+          isRecommandMessageVisual = false;
         });
       }
     });
@@ -53,6 +56,7 @@ class _ChatPageState extends State<ChatPage> {
 
                 setState(() {
                   isMenuBoxVisual = false; // 메뉴창 닫기
+                  isRecommandMessageVisual = false; // 추천메시지 닫기
                 });
               },
               child: Container(
@@ -86,6 +90,7 @@ class _ChatPageState extends State<ChatPage> {
         children: [
           _inputMessage(),
           isMenuBoxVisual ? _menuBox() : const SizedBox(),
+          isRecommandMessageVisual ? _recommandMessageBox() : const SizedBox(),
           _focusNode.hasFocus
               ? const SizedBox()
               : SizedBox(height: MediaQuery.of(context).size.height * 0.05),
@@ -269,46 +274,6 @@ class _ChatPageState extends State<ChatPage> {
         ),
       ),
     );
-
-    //** 메시지 색상 변경 및 아이콘 표시해서 보여주는 버전 */
-    // return Expanded(
-    //   child: isTransMessage
-    //       ? InkWell(
-    //           onTap: () {
-    //             _focusNode.unfocus(); // 텍스트필드 포커스 해제
-    //             showSnackbar(context);
-    //           },
-    //           child: Row(
-    //             mainAxisAlignment: MainAxisAlignment.start,
-    //             crossAxisAlignment: CrossAxisAlignment.center,
-    //             children: [
-    //               Text(
-    //                 messages,
-    //                 style: const TextStyle(
-    //                   fontSize: 15,
-    //                   color: Colors.indigo,
-    //                   //점선밑줄
-    //                   //decoration: TextDecoration.underline,
-    //                   decorationStyle: TextDecorationStyle.dotted,
-    //                   decorationColor: Colors.indigo,
-    //                 ),
-    //               ),
-    //               const SizedBox(width: 5),
-    //               const Icon(
-    //                 Icons.published_with_changes_sharp,
-    //                 size: 15,
-    //                 color: Colors.indigoAccent,
-    //               ),
-    //             ],
-    //           ))
-    //       : Text(
-    //           messages,
-    //           style: const TextStyle(
-    //             fontSize: 15,
-    //             color: Colors.black,
-    //           ),
-    //         ),
-    // );
   }
 
   Widget _originalMessageButton(String originalMessages, String transMessages) {
@@ -370,7 +335,6 @@ class _ChatPageState extends State<ChatPage> {
         ));
   }
 
-  // 메시지 입력창
   Widget _inputMessage() {
     return Container(
       color: Colors.white,
@@ -393,10 +357,12 @@ class _ChatPageState extends State<ChatPage> {
                       _focusNode.unfocus(); // 포커스 해제
                       setState(() {
                         isMenuBoxVisual = true; // 메뉴창을 연다
+                        isRecommandMessageVisual = false;
                       });
                     } else {
                       setState(() {
                         isMenuBoxVisual = true; // 메뉴창을 연다
+                        isRecommandMessageVisual = false;
                       });
                     }
                   },
@@ -434,7 +400,13 @@ class _ChatPageState extends State<ChatPage> {
                   ),
                   //보내기 버튼
                   IconButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      setState(() {
+                        _focusNode.unfocus(); //포커스 해제
+                        isMenuBoxVisual = false; //메뉴창을 닫는다.
+                        isRecommandMessageVisual = true; //추천메시지창을 연다.
+                      });
+                    },
                     icon: const Icon(Icons.send),
                   ),
                 ],
@@ -443,6 +415,19 @@ class _ChatPageState extends State<ChatPage> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _recommandMessageBox() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 5),
+      //높이를 화면의 30%
+      height: MediaQuery.of(context).size.height * 0.28,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: Colors.grey[300]!),
+      ),
+      child: RecommandMessageList(),
     );
   }
 
