@@ -10,7 +10,7 @@ class SetProfileComponent extends StatefulWidget {
 class _SetProfileComponentState extends State<SetProfileComponent> {
   @override
   Widget build(BuildContext context) {
-    return Form(
+    return const Form(
       child: Column(
         children: [
           Text('Set Profile Page'),

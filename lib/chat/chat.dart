@@ -26,11 +26,8 @@ class _ChatPageState extends State<ChatPage> {
 
     _focusNode.addListener(() {
       if (_focusNode.hasFocus) {
-        // TextField가 포커스를 받으면 isMenuBoxVisual를 false로 설정
-        setState(() {
-          isMenuBoxVisual = false;
-          isRecommandMessageVisual = false;
-        });
+        context.read<ChatBloc>().add(ToggleMenuBoxVisibility());
+        context.read<ChatBloc>().add(ToggleRecommandMessageVisibility());
       }
     });
   }

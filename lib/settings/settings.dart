@@ -15,7 +15,7 @@ class _SettingsPageState extends State<SettingsPage> {
           title: const Text('설정'),
           centerTitle: false,
         ),
-        body: Center(
+        body: const Center(
           child: Text('Settings Page'),
         ));
   }

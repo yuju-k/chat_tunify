@@ -45,7 +45,7 @@ class _ContactsPageState extends State<ContactsPage> {
         maxHeight: MediaQuery.of(context).size.height * .40,
       ),
       builder: (BuildContext bc) {
-        return AddFriend();
+        return const AddFriend();
       },
     );
   }
