@@ -25,10 +25,10 @@ class _ChatPageState extends State<ChatPage> {
               onTap: () {
                 FocusScope.of(context).unfocus();
               },
-              child: MessageList(),
+              child: const MessageList(),
             ),
             //메시지 입력창 & 메뉴
-            Column(
+            const Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [BottomInputMenuBox()],
             ),
