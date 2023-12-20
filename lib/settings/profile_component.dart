@@ -50,11 +50,11 @@ class _ProfileComponentState extends State<ProfileComponent> {
           ),
           ElevatedButton(
               onPressed: () {},
-              child: const Text('프로필 사진 변경',
-                  style: TextStyle(color: Colors.black)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
-              )),
+              ),
+              child: const Text('프로필 사진 변경',
+                  style: TextStyle(color: Colors.black))),
 
           const SizedBox(height: 20.0),
 

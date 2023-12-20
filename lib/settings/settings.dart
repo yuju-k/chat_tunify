@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:chat_tunify/bloc/auth_bloc.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -128,7 +130,7 @@ class _SettingsPageState extends State<SettingsPage> {
           leading: const Icon(Icons.logout),
           title: const Text('로그아웃'),
           onTap: () {
-            //TODO: 로그아웃 기능 구현
+            BlocProvider.of<AuthenticationBloc>(context).add(LogoutRequested());
           },
         ),
       ],

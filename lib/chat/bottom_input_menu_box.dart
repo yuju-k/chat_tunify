@@ -40,10 +40,10 @@ class _BottomInputMenuBoxState extends State<BottomInputMenuBox> {
               !recommandMessageBoxVisible &&
               !_focusNode.hasFocus)
             SizedBox(height: MediaQuery.of(context).size.height * 0.05),
-          Visibility(child: _menuBox(), visible: menuBoxVisible),
+          Visibility(visible: menuBoxVisible, child: _menuBox()),
           Visibility(
-              child: _recommandMessageBox(),
-              visible: recommandMessageBoxVisible),
+              visible: recommandMessageBoxVisible,
+              child: _recommandMessageBox()),
         ],
       ),
     );
@@ -155,7 +155,7 @@ class _BottomInputMenuBoxState extends State<BottomInputMenuBox> {
       child: Stack(
         children: [
           //추천 메시지
-          RecommandMessageList(),
+          const RecommandMessageList(),
           //닫기 버튼
           Positioned(
             right: 0,
