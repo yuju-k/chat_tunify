@@ -443,7 +443,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
           ),
           BlocBuilder<MessageSendBloc, MessageSendState>(
             builder: (context, state) {
-              if (state is ChatGPTSendMessageSendingState) {
+              if (state is ChatGPTSendMessageSendingState &&
+                  !_isRecommendMessageWidgetVisible) {
                 // Show loading indicator when message is being sent
                 return const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16),
@@ -472,22 +473,6 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                 );
               }
             },
-          ),
-          Visibility(
-            // 새로고침버튼
-            visible: _isRecommendMessageWidgetVisible,
-            child: IconButton(
-                onPressed: () {
-                  if (_textEditingController.text.isNotEmpty) {
-                    context.read<MessageSendBloc>().add(
-                        ChatGptRecommendMessageEvent(
-                            _textEditingController.text));
-                    //새로고침 로그 기록
-                    context.read<ChatActionLogBloc>().add(ChatActionLogEvent(
-                        ChatAction.refresh, roomId, myName!));
-                  }
-                },
-                icon: const Icon(Icons.refresh, color: Colors.blueAccent)),
           ),
           Visibility(
             visible: _isRecommendMessageWidgetVisible,
@@ -538,19 +523,57 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
             // Close button
             Positioned(
               right: 0,
-              child: IconButton(
-                onPressed: () {
-                  setState(() {
-                    _isRecommendMessageWidgetVisible = false;
-                    // 로그 기록 (추천 메시지 창 닫은 경우)
-                    context.read<ChatActionLogBloc>().add(ChatActionLogEvent(
-                          ChatAction.recommendMessageCardClose,
-                          roomId,
-                          myName!,
-                        ));
-                  });
-                },
-                icon: const Icon(Icons.close),
+              child: Row(
+                children: [
+                  BlocBuilder<MessageSendBloc, MessageSendState>(
+                    builder: (context, state) {
+                      if (state is ChatGPTSendMessageSendingState) {
+                        return const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 16),
+                          child: SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                            ),
+                          ),
+                        );
+                      } else {
+                        return IconButton(
+                          onPressed: () {
+                            if (_textEditingController.text.isNotEmpty) {
+                              context.read<MessageSendBloc>().add(
+                                  ChatGptRecommendMessageEvent(
+                                      _textEditingController.text));
+                              //새로고침 로그 기록
+                              context.read<ChatActionLogBloc>().add(
+                                  ChatActionLogEvent(
+                                      ChatAction.refresh, roomId, myName!));
+                            }
+                          },
+                          icon: const Icon(Icons.refresh,
+                              color: Colors.blueAccent),
+                        );
+                      }
+                    },
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      setState(() {
+                        _isRecommendMessageWidgetVisible = false;
+                        // 로그 기록 (추천 메시지 창 닫은 경우)
+                        context
+                            .read<ChatActionLogBloc>()
+                            .add(ChatActionLogEvent(
+                              ChatAction.recommendMessageCardClose,
+                              roomId,
+                              myName!,
+                            ));
+                      });
+                    },
+                    icon: const Icon(Icons.close),
+                  ),
+                ],
               ),
             ),
           ],
