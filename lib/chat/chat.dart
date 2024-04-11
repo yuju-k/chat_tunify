@@ -584,12 +584,12 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                 convertMessageContent: recommandMessage!,
                 timestamp: DateTime.now().toString(),
                 isConvertMessage: true,
-                originalSentiment: sensibility!,
-                sendMessageSentiment: sensibility!,
-                timeDelayUser:
-                    '', // TODO: Calculate time delay from user's previous message
-                timeDelayOther:
-                    '', // TODO: Calculate time delay from other user's response message
+                originalSentiment:
+                    sensibility ?? '', // sensibility가 null이면 빈 문자열로 설정
+                sendMessageSentiment:
+                    sensibility ?? '', // sensibility가 null이면 빈 문자열로 설정
+                timeDelayUser: '',
+                timeDelayOther: '',
               ));
 
           //추천메시지 카드 클릭시 로그 기록

@@ -118,24 +118,6 @@ class ChatRoomBloc extends Bloc<ChatRoomEvent, ChatRoomState> {
       'last_message': '',
       'last_message_timestamp': ServerValue.timestamp,
       'create_chat_room_timestamp': ServerValue.timestamp,
-      'log_data': {
-        'userName1': {
-          'recommendMessageCard': 0,
-          'send': 0,
-          'arrowUpward': 0,
-          'refresh': 0,
-          'backSpace': 0,
-          'recommendMessageCardClose': 0,
-        },
-        'userName2': {
-          'recommendMessageCard': 0,
-          'send': 0,
-          'arrowUpward': 0,
-          'refresh': 0,
-          'backSpace': 0,
-          'recommendMessageCardClose': 0,
-        },
-      },
     });
 
     await firestore.collection('user_chat_rooms').doc(userEmail).set({
