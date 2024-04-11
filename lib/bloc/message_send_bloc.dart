@@ -48,8 +48,7 @@ class FirebaseMessageSaveEvent extends MessageSendEvent {
   final bool isConvertMessage;
   final String originalSentiment;
   final String sendMessageSentiment;
-  final String timeDelayUser;
-  final String timeDelayOther;
+  final int backspaceCount;
 
   FirebaseMessageSaveEvent({
     required this.roomId,
@@ -62,8 +61,7 @@ class FirebaseMessageSaveEvent extends MessageSendEvent {
     required this.isConvertMessage,
     required this.originalSentiment,
     required this.sendMessageSentiment,
-    required this.timeDelayUser,
-    required this.timeDelayOther,
+    required this.backspaceCount,
   });
 }
 
@@ -206,8 +204,7 @@ class MessageSendBloc extends Bloc<MessageSendEvent, MessageSendState> {
         'originalSentiment': event.originalSentiment,
         'sendMessageSentiment': event.sendMessageSentiment,
         'timestamp': event.timestamp,
-        'timeDelayUser': event.timeDelayUser,
-        'timeDelayOther': event.timeDelayOther,
+        'backspaceCount': event.backspaceCount,
       });
 
       // Then, update the last_message field in the chat_rooms node

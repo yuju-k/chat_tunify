@@ -61,6 +61,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   final FocusNode textFieldFocusNode = FocusNode();
   //스크롤 컨트롤러
   final ScrollController _scrollController = ScrollController();
+  int backspaceCount = 0; // Counter for backspace key presses
 
   //스크롤러 맨 아래로 내리는 함수
   void scrollToBottom() {
@@ -74,6 +75,31 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   //스크롤러 맨 아래로 내리기, 애니메이션 없이
   void scrollToBottomWithoutAnimation() {
     _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+  }
+
+  void saveMessageToFirebase({
+    required String convertMessageContent,
+    required bool isConvertMessage,
+    required String originalSentiment,
+    required String sendMessageSentiment,
+    required int backspaceCount,
+  }) {
+    context.read<MessageSendBloc>().add(FirebaseMessageSaveEvent(
+          roomId: widget.roomId,
+          senderEmail: FirebaseAuth.instance.currentUser!.email!,
+          senderName: myName!,
+          senderUID: myUid!,
+          originalMessageContent: _textEditingController.text,
+          convertMessageContent: convertMessageContent,
+          timestamp: DateTime.now().toString(),
+          isConvertMessage: isConvertMessage,
+          originalSentiment: originalSentiment,
+          sendMessageSentiment: sendMessageSentiment,
+          backspaceCount: backspaceCount,
+        ));
+
+    //텍스트 필드 비우기
+    _textEditingController.clear();
   }
 
   @override
@@ -196,25 +222,13 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                           _textEditingController.text));
                 } else {
                   //mixed, neutral, positive 일 때
-                  //Firebase에 메시지 저장
-                  context.read<MessageSendBloc>().add(FirebaseMessageSaveEvent(
-                        roomId: roomId,
-                        senderEmail: FirebaseAuth.instance.currentUser!.email!,
-                        senderName: myName!,
-                        senderUID: myUid!,
-                        originalMessageContent: _textEditingController.text,
-                        convertMessageContent: '',
-                        timestamp: DateTime.now().toString(),
-                        isConvertMessage: false,
-                        originalSentiment: state.analysisResult,
-                        sendMessageSentiment: '',
-                        timeDelayUser:
-                            '', // TODO: Calculate time delay from user's previous message
-                        timeDelayOther:
-                            '', // TODO: Calculate time delay from other user's response message
-                      ));
-                  //텍스트 필드 비우기
-                  _textEditingController.clear();
+                  saveMessageToFirebase(
+                    convertMessageContent: '',
+                    isConvertMessage: false,
+                    originalSentiment: state.analysisResult,
+                    sendMessageSentiment: '',
+                    backspaceCount: backspaceCount,
+                  );
                 }
               }
               if (state is ChatGptRecommendMessageState) {
@@ -439,6 +453,12 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                 hintText: '메시지를 입력하세요',
                 border: UnderlineInputBorder(borderSide: BorderSide.none),
               ),
+              onChanged: (value) {
+                int count = _textEditingController.value.text.runes.length;
+                if (value.length < count) {
+                  backspaceCount++;
+                }
+              },
             ),
           ),
           BlocBuilder<MessageSendBloc, MessageSendState>(
@@ -482,26 +502,18 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                 setState(() {
                   _isRecommendMessageWidgetVisible = false;
                 });
-                //Firebase에 메시지 저장
-                context.read<MessageSendBloc>().add(FirebaseMessageSaveEvent(
-                    roomId: roomId,
-                    senderEmail: FirebaseAuth.instance.currentUser!.email!,
-                    senderName: myName!,
-                    senderUID: myUid!,
-                    originalMessageContent: _textEditingController.text,
-                    convertMessageContent: recommandMessage!,
-                    timestamp: DateTime.now().toString(),
-                    isConvertMessage: false,
-                    originalSentiment: sensibility!,
-                    sendMessageSentiment: '',
-                    timeDelayOther: '',
-                    timeDelayUser: ''));
+
+                saveMessageToFirebase(
+                  convertMessageContent: recommandMessage!,
+                  isConvertMessage: false,
+                  originalSentiment: sensibility!,
+                  sendMessageSentiment: '',
+                  backspaceCount: backspaceCount,
+                );
 
                 //추천메시지 상태에서 메시지 전송 로그 기록
                 context.read<ChatActionLogBloc>().add(ChatActionLogEvent(
                     ChatAction.arrowUpward, roomId, myName!));
-
-                _textEditingController.clear();
               },
               icon: const Icon(Icons.arrow_upward, color: Colors.blueAccent),
             ),
@@ -611,15 +623,20 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                     sensibility ?? '', // sensibility가 null이면 빈 문자열로 설정
                 sendMessageSentiment:
                     sensibility ?? '', // sensibility가 null이면 빈 문자열로 설정
-                timeDelayUser: '',
-                timeDelayOther: '',
+                backspaceCount: backspaceCount,
               ));
+
+          saveMessageToFirebase(
+            convertMessageContent: recommandMessage!,
+            isConvertMessage: true,
+            originalSentiment: sensibility ?? '',
+            sendMessageSentiment: sensibility ?? '',
+            backspaceCount: backspaceCount,
+          );
 
           //추천메시지 카드 클릭시 로그 기록
           context.read<ChatActionLogBloc>().add(ChatActionLogEvent(
               ChatAction.recommandMessageCard, roomId, myName!));
-
-          _textEditingController.clear();
         });
       },
     );
