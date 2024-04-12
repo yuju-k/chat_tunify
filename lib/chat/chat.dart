@@ -87,7 +87,6 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     required bool isConvertMessage,
     required String originalSentiment,
     required String sendMessageSentiment,
-    required int backspaceCount,
   }) {
     context.read<MessageSendBloc>().add(FirebaseMessageSaveEvent(
           roomId: widget.roomId,
@@ -108,6 +107,10 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     setState(() {
       backspaceCount = 0;
     });
+  }
+
+  void _logChatAction(ChatAction action) {
+    _chatActionLogBloc.add(ChatActionLogEvent(action, roomId, myName!));
   }
 
   @override
@@ -188,7 +191,6 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                 scrollToBottomWithoutAnimation();
               }
               if (state is ChatRoomCreated) {
-                //print('Chat room created with ID: ${state.roomId}');
                 context
                     .read<MessageReceiveBloc>()
                     .add(ListenForMessages(roomId: roomId));
@@ -205,7 +207,6 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                     myImageUrl = state.imageUrl;
                     myUid = state.uid;
                   });
-                  //print('My name: $myName / $myUid');
                 } else if (state.email == widget.email) {
                   // 상대방의 프로필 정보 로드됨
                   setState(() {
@@ -213,11 +214,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                     friendImageUrl = state.imageUrl;
                     friendUid = state.uid;
                   });
-                  //print('Friend name: $friendName / $friendUid');
                 }
-              } else if (state is ProfileLoading) {
-                // print('Loading profile...');
-              }
+              } else if (state is ProfileLoading) {}
             },
           ),
           BlocListener<MessageSendBloc, MessageSendState>(
@@ -237,21 +235,16 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                     isConvertMessage: false,
                     originalSentiment: state.analysisResult,
                     sendMessageSentiment: '',
-                    backspaceCount: backspaceCount,
                   );
                 }
               }
               if (state is ChatGptRecommendMessageState) {
-                //print('GPT 추천 메시지: ${state.chatGptRecommendResponse}');
                 setState(() {
                   recommandMessage = state.chatGptRecommendResponse;
                   _isRecommendMessageWidgetVisible = true;
                 });
               }
-              if (state is ChatGPTSendMessageSendErrorState) {
-                // Handle the error
-                //print('Error: ${state.error}');
-              }
+              if (state is ChatGPTSendMessageSendErrorState) {}
             },
           ),
         ],
@@ -414,10 +407,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                     myName!));
                           } else {
                             //원본메시지 숨기기 버튼 클릭시 로그 기록
-                            _chatActionLogBloc.add(ChatActionLogEvent(
-                                ChatAction.viewOriginalMessageClose,
-                                roomId,
-                                myName!));
+                            _logChatAction(ChatAction.viewOriginalMessageClose);
                           }
                         },
                         child: Row(
@@ -467,7 +457,6 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                 if (currentText.length < previousText.length) {
                   setState(() {
                     backspaceCount++;
-                    //print("backspaceCount: $backspaceCount");
                   });
                 }
                 previousText = currentText;
@@ -512,7 +501,6 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
             child: BlocBuilder<MessageSendBloc, MessageSendState>(
               builder: (context, state) {
                 if (state is FirebaseMessageSaveSendingState) {
-                  //여기??이상함
                   return const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16),
                     child: SizedBox(
@@ -553,12 +541,10 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                           isConvertMessage: false,
                           originalSentiment: sensibility!,
                           sendMessageSentiment: sendSensibility!,
-                          backspaceCount: backspaceCount,
                         );
 
                         //추천메시지 상태에서 메시지 전송 로그 기록
-                        _chatActionLogBloc.add(ChatActionLogEvent(
-                            ChatAction.arrowUpward, roomId, myName!));
+                        _logChatAction(ChatAction.arrowUpward);
                       });
                     },
                     icon: const Icon(Icons.arrow_upward,
@@ -608,8 +594,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                   ChatGptRecommendMessageEvent(
                                       _textEditingController.text));
                               //새로고침 로그 기록
-                              _chatActionLogBloc.add(ChatActionLogEvent(
-                                  ChatAction.refresh, roomId, myName!));
+                              _logChatAction(ChatAction.refresh);
                             }
                           },
                           icon: const Icon(Icons.refresh,
@@ -623,10 +608,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                       setState(() {
                         _isRecommendMessageWidgetVisible = false;
                         // 로그 기록 (추천 메시지 창 닫은 경우)
-                        _chatActionLogBloc.add(ChatActionLogEvent(
-                            ChatAction.recommendMessageCardClose,
-                            roomId,
-                            myName!));
+                        _logChatAction(ChatAction.recommendMessageCardClose);
                       });
                     },
                     icon: const Icon(Icons.close),
@@ -660,12 +642,10 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
             isConvertMessage: true,
             originalSentiment: sensibility ?? '',
             sendMessageSentiment: '',
-            backspaceCount: backspaceCount,
           );
 
           //추천메시지 카드 클릭시 로그 기록
-          _chatActionLogBloc.add(ChatActionLogEvent(
-              ChatAction.recommandMessageCard, roomId, myName!));
+          _logChatAction(ChatAction.recommandMessageCard);
         });
       },
     );
