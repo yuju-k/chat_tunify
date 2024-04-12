@@ -8,7 +8,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:chat_tunify/chat/message_class.dart';
 import 'package:chat_tunify/bloc/message_receive_bloc.dart';
 import 'package:chat_tunify/bloc/chat_action_log_bloc.dart';
-import 'package:chat_tunify/chat/widgets/mode_on_off_widget.dart';
+import 'package:chat_tunify/chat/mode_on_off_widget.dart';
 
 class ChatRoomPage extends StatefulWidget {
   //const ChatRoomPage({super.key});
@@ -44,6 +44,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
 
   String? recommandMessage; // 추천 메시지 내용을 위한 변수
   String? sensibility; // 메시지의 감성 분석 결과를 담을 변수
+  String? sendSensibility; // 최종 메시지 전송(ArrowUp) 시 감성 분석 결과를 담을 변수
 
   final Map<String, bool> _originalMessageVisibility = {};
   bool _isRecommendMessageWidgetVisible = false;
@@ -61,7 +62,11 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   final FocusNode textFieldFocusNode = FocusNode();
   //스크롤 컨트롤러
   final ScrollController _scrollController = ScrollController();
-  int backspaceCount = 0; // Counter for backspace key presses
+
+  String previousText = '';
+  int backspaceCount = 0;
+
+  late ChatActionLogBloc _chatActionLogBloc;
 
   //스크롤러 맨 아래로 내리는 함수
   void scrollToBottom() {
@@ -100,6 +105,9 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
 
     //텍스트 필드 비우기
     _textEditingController.clear();
+    setState(() {
+      backspaceCount = 0;
+    });
   }
 
   @override
@@ -122,6 +130,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     profileBloc.add(ProfileLoadRequested(widget.email)); // 상대방 프로필
     profileBloc.add(ProfileLoadRequested(
         FirebaseAuth.instance.currentUser!.email!)); // 나의 프로필
+
+    _chatActionLogBloc = context.read<ChatActionLogBloc>();
 
     // Realtime Database에서 채팅방 정보 불러오기
     context.read<MessageReceiveBloc>().add(ListenForMessages(roomId: roomId));
@@ -404,11 +414,10 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                     myName!));
                           } else {
                             //원본메시지 숨기기 버튼 클릭시 로그 기록
-                            context.read<ChatActionLogBloc>().add(
-                                ChatActionLogEvent(
-                                    ChatAction.viewOriginalMessageClose,
-                                    roomId,
-                                    myName!));
+                            _chatActionLogBloc.add(ChatActionLogEvent(
+                                ChatAction.viewOriginalMessageClose,
+                                roomId,
+                                myName!));
                           }
                         },
                         child: Row(
@@ -454,10 +463,14 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                 border: UnderlineInputBorder(borderSide: BorderSide.none),
               ),
               onChanged: (value) {
-                int count = _textEditingController.value.text.runes.length;
-                if (value.length < count) {
-                  backspaceCount++;
+                final currentText = _textEditingController.text;
+                if (currentText.length < previousText.length) {
+                  setState(() {
+                    backspaceCount++;
+                    //print("backspaceCount: $backspaceCount");
+                  });
                 }
+                previousText = currentText;
               },
             ),
           ),
@@ -496,26 +509,63 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
           ),
           Visibility(
             visible: _isRecommendMessageWidgetVisible,
-            child: IconButton(
-              onPressed: () {
-                //recommandMessageWidget Toggle
-                setState(() {
-                  _isRecommendMessageWidgetVisible = false;
-                });
+            child: BlocBuilder<MessageSendBloc, MessageSendState>(
+              builder: (context, state) {
+                if (state is FirebaseMessageSaveSendingState) {
+                  //여기??이상함
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    child: SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                      ),
+                    ),
+                  );
+                } else {
+                  return IconButton(
+                    onPressed: () {
+                      //recommandMessageWidget Toggle
+                      setState(() {
+                        _isRecommendMessageWidgetVisible = false;
+                      });
 
-                saveMessageToFirebase(
-                  convertMessageContent: recommandMessage!,
-                  isConvertMessage: false,
-                  originalSentiment: sensibility!,
-                  sendMessageSentiment: '',
-                  backspaceCount: backspaceCount,
-                );
+                      // 감정분석 요청
+                      context.read<MessageSendBloc>().add(
+                          AzureSentimentAnalysisEvent2(
+                              _textEditingController.text));
 
-                //추천메시지 상태에서 메시지 전송 로그 기록
-                context.read<ChatActionLogBloc>().add(ChatActionLogEvent(
-                    ChatAction.arrowUpward, roomId, myName!));
+                      // 감정 분석 결과를 대기하고 결과를 얻음
+                      final sentimentState = context
+                          .read<MessageSendBloc>()
+                          .stream
+                          .firstWhere((state) =>
+                              state is AzureSentimentAnalysisSuccessState2)
+                          .then((state) =>
+                              state as AzureSentimentAnalysisSuccessState2);
+
+                      sentimentState.then((state) {
+                        sendSensibility = state.analysisResult;
+
+                        saveMessageToFirebase(
+                          convertMessageContent: recommandMessage!,
+                          isConvertMessage: false,
+                          originalSentiment: sensibility!,
+                          sendMessageSentiment: sendSensibility!,
+                          backspaceCount: backspaceCount,
+                        );
+
+                        //추천메시지 상태에서 메시지 전송 로그 기록
+                        _chatActionLogBloc.add(ChatActionLogEvent(
+                            ChatAction.arrowUpward, roomId, myName!));
+                      });
+                    },
+                    icon: const Icon(Icons.arrow_upward,
+                        color: Colors.blueAccent),
+                  );
+                }
               },
-              icon: const Icon(Icons.arrow_upward, color: Colors.blueAccent),
             ),
           ),
         ],
@@ -558,9 +608,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                   ChatGptRecommendMessageEvent(
                                       _textEditingController.text));
                               //새로고침 로그 기록
-                              context.read<ChatActionLogBloc>().add(
-                                  ChatActionLogEvent(
-                                      ChatAction.refresh, roomId, myName!));
+                              _chatActionLogBloc.add(ChatActionLogEvent(
+                                  ChatAction.refresh, roomId, myName!));
                             }
                           },
                           icon: const Icon(Icons.refresh,
@@ -574,13 +623,10 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                       setState(() {
                         _isRecommendMessageWidgetVisible = false;
                         // 로그 기록 (추천 메시지 창 닫은 경우)
-                        context
-                            .read<ChatActionLogBloc>()
-                            .add(ChatActionLogEvent(
-                              ChatAction.recommendMessageCardClose,
-                              roomId,
-                              myName!,
-                            ));
+                        _chatActionLogBloc.add(ChatActionLogEvent(
+                            ChatAction.recommendMessageCardClose,
+                            roomId,
+                            myName!));
                       });
                     },
                     icon: const Icon(Icons.close),
@@ -609,33 +655,16 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       onTap: () {
         setState(() {
           _isRecommendMessageWidgetVisible = false;
-          //Firebase에 메시지 저장
-          context.read<MessageSendBloc>().add(FirebaseMessageSaveEvent(
-                roomId: roomId,
-                senderEmail: FirebaseAuth.instance.currentUser!.email!,
-                senderName: myName!,
-                senderUID: myUid!,
-                originalMessageContent: _textEditingController.text,
-                convertMessageContent: recommandMessage!,
-                timestamp: DateTime.now().toString(),
-                isConvertMessage: true,
-                originalSentiment:
-                    sensibility ?? '', // sensibility가 null이면 빈 문자열로 설정
-                sendMessageSentiment:
-                    sensibility ?? '', // sensibility가 null이면 빈 문자열로 설정
-                backspaceCount: backspaceCount,
-              ));
-
           saveMessageToFirebase(
             convertMessageContent: recommandMessage!,
             isConvertMessage: true,
             originalSentiment: sensibility ?? '',
-            sendMessageSentiment: sensibility ?? '',
+            sendMessageSentiment: '',
             backspaceCount: backspaceCount,
           );
 
           //추천메시지 카드 클릭시 로그 기록
-          context.read<ChatActionLogBloc>().add(ChatActionLogEvent(
+          _chatActionLogBloc.add(ChatActionLogEvent(
               ChatAction.recommandMessageCard, roomId, myName!));
         });
       },

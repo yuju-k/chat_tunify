@@ -14,6 +14,12 @@ class AzureSentimentAnalysisEvent extends MessageSendEvent {
   AzureSentimentAnalysisEvent(this.text);
 }
 
+class AzureSentimentAnalysisEvent2 extends MessageSendEvent {
+  final String text;
+
+  AzureSentimentAnalysisEvent2(this.text);
+}
+
 //Azure Status
 class AzureSentimentAnalysisInitialState extends MessageSendState {}
 
@@ -23,6 +29,12 @@ class AzureSentimentAnalysisSuccessState extends MessageSendState {
   final String analysisResult;
 
   AzureSentimentAnalysisSuccessState(this.analysisResult);
+}
+
+class AzureSentimentAnalysisSuccessState2 extends MessageSendState {
+  final String analysisResult;
+
+  AzureSentimentAnalysisSuccessState2(this.analysisResult);
 }
 
 class AzureSentimentAnalysisErrorState extends MessageSendState {
@@ -123,6 +135,7 @@ class MessageSendBloc extends Bloc<MessageSendEvent, MessageSendState> {
       {required this.databaseReference})
       : super(ChatGptSendMessageInitialState()) {
     on<AzureSentimentAnalysisEvent>(_onAzureSentimentAnalysisEvent);
+    on<AzureSentimentAnalysisEvent2>(_onAzureSentimentAnalysisEvent2);
     on<FirebaseMessageSaveEvent>(_onFirebaseMessageSaveEvent);
     on<ChatGptRecommendMessageEvent>(_onChatGptRecommendMessageEvent);
   }
@@ -136,6 +149,20 @@ class MessageSendBloc extends Bloc<MessageSendEvent, MessageSendState> {
       final analysisResult =
           await azureSentimentAnalysisService.analyzeSentiment(event.text);
       emit(AzureSentimentAnalysisSuccessState(analysisResult));
+    } catch (e) {
+      emit(AzureSentimentAnalysisErrorState(e.toString()));
+    }
+  }
+
+  Future<void> _onAzureSentimentAnalysisEvent2(
+    AzureSentimentAnalysisEvent2 event,
+    Emitter<MessageSendState> emit,
+  ) async {
+    emit(AzureSentimentAnalysisProcessingState());
+    try {
+      final analysisResult =
+          await azureSentimentAnalysisService.analyzeSentiment(event.text);
+      emit(AzureSentimentAnalysisSuccessState2(analysisResult));
     } catch (e) {
       emit(AzureSentimentAnalysisErrorState(e.toString()));
     }
