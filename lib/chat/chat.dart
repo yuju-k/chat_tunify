@@ -11,7 +11,6 @@ import 'package:chat_tunify/bloc/chat_action_log_bloc.dart';
 import 'package:chat_tunify/chat/mode_on_off_widget.dart';
 
 class ChatRoomPage extends StatefulWidget {
-  //const ChatRoomPage({super.key});
   final String email;
   final String name;
   final String uid;
@@ -30,43 +29,37 @@ class ChatRoomPage extends StatefulWidget {
 }
 
 class _ChatRoomPageState extends State<ChatRoomPage> {
+  // Chat room variables
   late String roomId;
+  final TextEditingController _textEditingController = TextEditingController();
+  final FocusNode textFieldFocusNode = FocusNode();
+  final ScrollController _scrollController = ScrollController();
+  late ChatActionLogBloc _chatActionLogBloc;
 
-  //나의 프로필 정보를 저장할 변수
+  // Profile variables
   String? myName;
   String? myImageUrl;
   String? myUid;
-
-  //친구 프로필 정보를 저장할 변수
   String? friendName;
   String? friendImageUrl = '';
   String? friendUid;
 
-  String? recommandMessage; // 추천 메시지 내용을 위한 변수
-  String? sensibility; // 메시지의 감성 분석 결과를 담을 변수
-  String? sendSensibility; // 최종 메시지 전송(ArrowUp) 시 감성 분석 결과를 담을 변수
-
+  // Chat message variables
+  String? recommandMessage;
+  String? sensibility;
+  String? sendSensibility;
   final Map<String, bool> _originalMessageVisibility = {};
   bool _isRecommendMessageWidgetVisible = false;
-
-  int _previousMessageCount = 0; // 메시지 목록의 이전 길이를 저장하는 변수
-
-  //** 모드 관련 변수 실험군에 맞춰서 변경 **//
-  bool originalMessageCheckMode = false; //원본 메시지확인 버튼 활성화 모드
-  bool isConvertMessageCheckMode = false; //변환된 메시지인지 확인할 수 있는 모드
-  //** */
-
-  double keyboardHeight = 0;
-
-  final TextEditingController _textEditingController = TextEditingController();
-  final FocusNode textFieldFocusNode = FocusNode();
-  //스크롤 컨트롤러
-  final ScrollController _scrollController = ScrollController();
-
+  int _previousMessageCount = 0;
   String previousText = '';
   int backspaceCount = 0;
 
-  late ChatActionLogBloc _chatActionLogBloc;
+  // Mode variables
+  bool originalMessageCheckMode = false;
+  bool isConvertMessageCheckMode = false;
+
+  // Other variables
+  double keyboardHeight = 0;
 
   //스크롤러 맨 아래로 내리는 함수
   void scrollToBottom() {
@@ -119,7 +112,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
 
     roomId = widget.roomId;
 
-    // 텍스트 컨트롤러 값 변경되면 _isRecommendMessageWidgetVisible를 false로 변경
+    // 텍스트 컨트롤러 값 변경되면 스크롤을 아래로 내림
     _textEditingController.addListener(() {
       if (_textEditingController.text.isNotEmpty) {
         setState(() {
@@ -136,7 +129,6 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
 
     _chatActionLogBloc = context.read<ChatActionLogBloc>();
 
-    // Realtime Database에서 채팅방 정보 불러오기
     context.read<MessageReceiveBloc>().add(ListenForMessages(roomId: roomId));
   }
 
@@ -149,7 +141,6 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   }
 
   void _showModalBottomSheet() {
-    //modeOnOffWidget을 모달로 띄우는 함수
     showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
@@ -316,8 +307,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       itemCount: messages.length,
       itemBuilder: (context, index) {
         Message message = messages[index];
-        bool isSender = message.senderUID == myUid;
-        return messageContainer(message, isSender: isSender);
+        return messageContainer(message, isSender: message.senderUID == myUid);
       },
     );
   }
