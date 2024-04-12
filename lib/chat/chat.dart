@@ -597,7 +597,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   Widget recommandMessageCard() {
     return InkWell(
       child: Card(
-        margin: const EdgeInsets.fromLTRB(10, 10, 40, 10),
+        margin: const EdgeInsets.fromLTRB(10, 10, 100, 10),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(8, 3, 8, 3),
           child: Text(
