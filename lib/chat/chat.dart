@@ -128,7 +128,6 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         FirebaseAuth.instance.currentUser!.email!)); // 나의 프로필
 
     _chatActionLogBloc = context.read<ChatActionLogBloc>();
-
     context.read<MessageReceiveBloc>().add(ListenForMessages(roomId: roomId));
   }
 
@@ -142,75 +141,73 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
 
   void _showModalBottomSheet() {
     showModalBottomSheet(
-      context: context,
-      builder: (BuildContext context) {
-        return ModeOnOffWidget(
-          originalMessageCheckMode: originalMessageCheckMode,
-          isConvertMessageCheckMode: isConvertMessageCheckMode,
-          onOriginalMessageCheckModeChanged: (value) {
-            setState(() {
-              originalMessageCheckMode = value;
-            });
-          },
-          onConvertMessageCheckModeChanged: (value) {
-            setState(() {
-              isConvertMessageCheckMode = value;
-            });
-          },
-        );
-      },
-    );
+        context: context,
+        builder: (BuildContext context) {
+          return ModeOnOffWidget(
+              originalMessageCheckMode: originalMessageCheckMode,
+              isConvertMessageCheckMode: isConvertMessageCheckMode,
+              onOriginalMessageCheckModeChanged: (value) {
+                setState(() {
+                  originalMessageCheckMode = value;
+                });
+              },
+              onConvertMessageCheckModeChanged: (value) {
+                setState(() {
+                  isConvertMessageCheckMode = value;
+                });
+              });
+        });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: InkWell(
-          onLongPress: () {
-            _showModalBottomSheet();
-          },
-          child: Text(widget.name),
+        appBar: AppBar(
+          title: InkWell(
+            onLongPress: () {
+              _showModalBottomSheet();
+            },
+            child: Text(widget.name),
+          ),
+          centerTitle: false,
         ),
-        centerTitle: false,
-      ),
-      body: MultiBlocListener(
-        listeners: [
-          BlocListener<ChatRoomBloc, ChatRoomState>(
-            listener: (context, state) {
-              if (state is ChatRoomLoaded) {
-                scrollToBottomWithoutAnimation();
-              }
-              if (state is ChatRoomCreated) {
-                context
-                    .read<MessageReceiveBloc>()
-                    .add(ListenForMessages(roomId: roomId));
-              }
-            },
-          ),
-          BlocListener<ProfileBloc, ProfileState>(
-            listener: (context, state) {
-              if (state is ProfileLoaded) {
-                if (state.email == FirebaseAuth.instance.currentUser!.email) {
-                  // 나의 프로필 정보 로드됨
-                  setState(() {
-                    myName = state.name;
-                    myImageUrl = state.imageUrl;
-                    myUid = state.uid;
-                  });
-                } else if (state.email == widget.email) {
-                  // 상대방의 프로필 정보 로드됨
-                  setState(() {
-                    friendName = state.name;
-                    friendImageUrl = state.imageUrl;
-                    friendUid = state.uid;
-                  });
+        body: MultiBlocListener(
+          listeners: [
+            BlocListener<ChatRoomBloc, ChatRoomState>(
+              listener: (context, state) {
+                if (state is ChatRoomLoaded) {
+                  scrollToBottomWithoutAnimation();
                 }
-              } else if (state is ProfileLoading) {}
-            },
-          ),
-          BlocListener<MessageSendBloc, MessageSendState>(
-            listener: (context, state) {
+                if (state is ChatRoomCreated) {
+                  context
+                      .read<MessageReceiveBloc>()
+                      .add(ListenForMessages(roomId: roomId));
+                }
+              },
+            ),
+            BlocListener<ProfileBloc, ProfileState>(
+              listener: (context, state) {
+                if (state is ProfileLoaded) {
+                  if (state.email == FirebaseAuth.instance.currentUser!.email) {
+                    // 나의 프로필 정보 로드됨
+                    setState(() {
+                      myName = state.name;
+                      myImageUrl = state.imageUrl;
+                      myUid = state.uid;
+                    });
+                  } else if (state.email == widget.email) {
+                    // 상대방의 프로필 정보 로드됨
+                    setState(() {
+                      friendName = state.name;
+                      friendImageUrl = state.imageUrl;
+                      friendUid = state.uid;
+                    });
+                  }
+                } else if (state is ProfileLoading) {}
+              },
+            ),
+            BlocListener<MessageSendBloc, MessageSendState>(
+                listener: (context, state) {
               if (state is AzureSentimentAnalysisSuccessState) {
                 if (state.analysisResult == 'negative') {
                   sensibility = state.analysisResult;
@@ -236,67 +233,55 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                 });
               }
               if (state is ChatGPTSendMessageSendErrorState) {}
-            },
-          ),
-        ],
-        child: totalWidet(),
-      ),
-    );
+            })
+          ],
+          child: totalWidet(),
+        ));
   }
 
   Widget totalWidet() {
     return Column(
       children: [
-        Expanded(
-          child: BlocBuilder<MessageReceiveBloc, MessageReceiveState>(
+        Expanded(child: BlocBuilder<MessageReceiveBloc, MessageReceiveState>(
             builder: (context, state) {
-              if (state is MessagesUpdated) {
-                if (_previousMessageCount != state.messages.length) {
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    if (_scrollController.hasClients) {
-                      scrollToBottom();
-                    }
-                  });
-                  _previousMessageCount = state.messages.length;
+          if (state is MessagesUpdated) {
+            if (_previousMessageCount != state.messages.length) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (_scrollController.hasClients) {
+                  scrollToBottom();
                 }
+              });
+              _previousMessageCount = state.messages.length;
+            }
 
-                return messagingWidget(state.messages);
-              } else {
-                return const Center(child: CircularProgressIndicator());
-              }
-            },
-          ),
-        ),
+            return messagingWidget(state.messages);
+          } else {
+            return const Center(child: CircularProgressIndicator());
+          }
+        })),
         Form(
-          child: Stack(
-            children: [
-              Column(
-                children: [
-                  recommendMessageWidget(),
-                  typingMessageWidget(),
-                  KeyboardVisibilityBuilder(
-                      builder: (context, isKeyboardVisible) {
-                    return Visibility(
+            child: Stack(
+          children: [
+            Column(
+              children: [
+                recommendMessageWidget(),
+                typingMessageWidget(),
+                KeyboardVisibilityBuilder(
+                    builder: (context, isKeyboardVisible) {
+                  return Visibility(
                       visible: !isKeyboardVisible &&
                           !_isRecommendMessageWidgetVisible,
                       child: const Column(
                         children: [
-                          Divider(
-                            height: 1,
-                            thickness: 1,
-                          ),
-                          SizedBox(
-                            height: 25,
-                          ),
+                          Divider(height: 1, thickness: 1),
+                          SizedBox(height: 25),
                         ],
-                      ),
-                    );
-                  }),
-                ],
-              )
-            ],
-          ),
-        ),
+                      ));
+                }),
+              ],
+            )
+          ],
+        )),
       ],
     );
   }
@@ -317,23 +302,22 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     bool isOriginalVisible = _originalMessageVisibility[messageKey] ?? false;
     final bool isConvertMessage = message.isConvertMessage;
 
-    return Column(
-      children: [
-        Container(
+    return Column(children: [
+      Container(
           color: isSender ? Colors.white : Colors.grey[100],
           child: ListTile(
-            leading: CircleAvatar(
-              radius: 20,
-              backgroundImage: isSender
-                  ? (myImageUrl == ''
-                      ? const AssetImage('assets/images/default_profile.png')
-                      : NetworkImage(myImageUrl!) as ImageProvider)
-                  : (friendImageUrl == ''
-                      ? const AssetImage('assets/images/default_profile_2.jpg')
-                      : NetworkImage(friendImageUrl!) as ImageProvider),
-            ),
-            title: Row(
-              children: [
+              leading: CircleAvatar(
+                radius: 20,
+                backgroundImage: isSender
+                    ? (myImageUrl == ''
+                        ? const AssetImage('assets/images/default_profile.png')
+                        : NetworkImage(myImageUrl!) as ImageProvider)
+                    : (friendImageUrl == ''
+                        ? const AssetImage(
+                            'assets/images/default_profile_2.jpg')
+                        : NetworkImage(friendImageUrl!) as ImageProvider),
+              ),
+              title: Row(children: [
                 Text(
                   message.senderName,
                   style: const TextStyle(
@@ -350,92 +334,83 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                 ),
                 const SizedBox(width: 5),
                 Expanded(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Visibility(
-                          child: isConvertMessageCheckMode && isConvertMessage
-                              ? const Icon(Icons.published_with_changes_rounded,
-                                  size: 20, color: Colors.blueAccent)
-                              : const SizedBox(width: 5)),
-                    ],
-                  ),
+                  child:
+                      Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                    Visibility(
+                        child: isConvertMessageCheckMode && isConvertMessage
+                            ? const Icon(Icons.published_with_changes_rounded,
+                                size: 20, color: Colors.blueAccent)
+                            : const SizedBox(width: 5)),
+                  ]),
                 ),
-              ],
-            ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  isConvertMessage
-                      ? message.convertMessageContent
-                      : message.originalMessageContent,
-                  style: const TextStyle(fontSize: 14),
-                ),
-                Visibility(
-                  visible: isOriginalVisible && originalMessageCheckMode,
-                  child: Text(message.originalMessageContent,
-                      style: const TextStyle(fontSize: 14, color: Colors.blue)),
-                ),
-                Visibility(
-                  visible: isConvertMessage && originalMessageCheckMode,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      InkWell(
-                        onTap: () {
-                          setState(() {
-                            _originalMessageVisibility[messageKey] =
-                                !isOriginalVisible;
-                          });
-                          if (_originalMessageVisibility[messageKey] == true) {
-                            //원본메시지 확인버튼 클릭시 로그 기록
-                            context.read<ChatActionLogBloc>().add(
-                                ChatActionLogEvent(
-                                    ChatAction.viewOriginalMessage,
-                                    roomId,
-                                    myName!));
-                          } else {
-                            //원본메시지 숨기기 버튼 클릭시 로그 기록
-                            _logChatAction(ChatAction.viewOriginalMessageClose);
-                          }
-                        },
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
+              ]),
+              subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      isConvertMessage
+                          ? message.convertMessageContent
+                          : message.originalMessageContent,
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                    Visibility(
+                      visible: isOriginalVisible && originalMessageCheckMode,
+                      child: Text(message.originalMessageContent,
+                          style: const TextStyle(
+                              fontSize: 14, color: Colors.blue)),
+                    ),
+                    Visibility(
+                      visible: isConvertMessage && originalMessageCheckMode,
+                      child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
                           children: [
-                            Icon(
-                                !isOriginalVisible
-                                    ? Icons.visibility
-                                    : Icons.visibility_off,
-                                size: 20,
-                                color: Colors.grey),
-                            const SizedBox(width: 5),
-                            Text(
-                              isOriginalVisible ? '원본 메시지 숨기기' : '원본 메시지 확인',
-                              style: const TextStyle(fontSize: 14),
+                            InkWell(
+                              onTap: () {
+                                setState(() {
+                                  _originalMessageVisibility[messageKey] =
+                                      !isOriginalVisible;
+                                });
+                                if (_originalMessageVisibility[messageKey] ==
+                                    true) {
+                                  _logChatAction(
+                                      ChatAction.viewOriginalMessage);
+                                } else {
+                                  _logChatAction(
+                                      ChatAction.viewOriginalMessageClose);
+                                }
+                              },
+                              child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                        !isOriginalVisible
+                                            ? Icons.visibility
+                                            : Icons.visibility_off,
+                                        size: 20,
+                                        color: Colors.grey),
+                                    const SizedBox(width: 5),
+                                    Text(
+                                      isOriginalVisible
+                                          ? '원본 메시지 숨기기'
+                                          : '원본 메시지 확인',
+                                      style: const TextStyle(fontSize: 14),
+                                    )
+                                  ]),
                             ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        const Divider(height: 1, thickness: 1),
-      ],
-    );
+                          ]),
+                    ),
+                  ]))),
+      const Divider(height: 1, thickness: 1),
+    ]);
   }
 
   Widget typingMessageWidget() {
     return Padding(
-      padding: const EdgeInsets.only(left: 15, bottom: 5),
-      child: Row(
-        children: [
-          Expanded(
-            child: TextFormField(
+        padding: const EdgeInsets.only(left: 15, bottom: 5),
+        child: Row(
+          children: [
+            Expanded(
+                child: TextFormField(
               controller: _textEditingController,
               focusNode: textFieldFocusNode, // Attach the focus node here
               decoration: const InputDecoration(
@@ -451,45 +426,44 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                 }
                 previousText = currentText;
               },
-            ),
-          ),
-          BlocBuilder<MessageSendBloc, MessageSendState>(
-            builder: (context, state) {
-              if (state is ChatGPTSendMessageSendingState &&
-                  !_isRecommendMessageWidgetVisible) {
-                // Show loading indicator when message is being sent
-                return const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: CircularProgressIndicator(),
-                );
-              } else {
-                // Show send button when not sending a message
-                return Visibility(
-                  visible: !_isRecommendMessageWidgetVisible,
-                  child: IconButton(
-                    onPressed: () {
-                      // Only allow message send if text field has content
-                      if (_textEditingController.text.isNotEmpty) {
-                        context.read<MessageSendBloc>().add(
-                            AzureSentimentAnalysisEvent(
-                                _textEditingController.text));
-
-                        //메시지 전송 로그 기록
-                        context.read<ChatActionLogBloc>().add(
-                            ChatActionLogEvent(
-                                ChatAction.send, roomId, myName!));
-                      }
-                    },
-                    icon: const Icon(Icons.send),
-                  ),
-                );
-              }
-            },
-          ),
-          Visibility(
-            visible: _isRecommendMessageWidgetVisible,
-            child: BlocBuilder<MessageSendBloc, MessageSendState>(
+            )),
+            BlocBuilder<MessageSendBloc, MessageSendState>(
               builder: (context, state) {
+                if (state is ChatGPTSendMessageSendingState &&
+                    !_isRecommendMessageWidgetVisible) {
+                  // Show loading indicator when message is being sent
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    child: CircularProgressIndicator(),
+                  );
+                } else {
+                  // Show send button when not sending a message
+                  return Visibility(
+                    visible: !_isRecommendMessageWidgetVisible,
+                    child: IconButton(
+                      onPressed: () {
+                        // Only allow message send if text field has content
+                        if (_textEditingController.text.isNotEmpty) {
+                          context.read<MessageSendBloc>().add(
+                              AzureSentimentAnalysisEvent(
+                                  _textEditingController.text));
+
+                          //메시지 전송 로그 기록
+                          context.read<ChatActionLogBloc>().add(
+                              ChatActionLogEvent(
+                                  ChatAction.send, roomId, myName!));
+                        }
+                      },
+                      icon: const Icon(Icons.send),
+                    ),
+                  );
+                }
+              },
+            ),
+            Visibility(
+              visible: _isRecommendMessageWidgetVisible,
+              child: BlocBuilder<MessageSendBloc, MessageSendState>(
+                  builder: (context, state) {
                 if (state is FirebaseMessageSaveSendingState) {
                   return const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16),
@@ -532,8 +506,6 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                           originalSentiment: sensibility!,
                           sendMessageSentiment: sendSensibility!,
                         );
-
-                        //추천메시지 상태에서 메시지 전송 로그 기록
                         _logChatAction(ChatAction.arrowUpward);
                       });
                     },
@@ -541,103 +513,89 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                         color: Colors.blueAccent),
                   );
                 }
-              },
+              }),
             ),
-          ),
-        ],
-      ),
-    );
+          ],
+        ));
   }
 
   Widget recommendMessageWidget() {
     return Visibility(
-      visible: _isRecommendMessageWidgetVisible,
-      child: Container(
-        width: double.infinity,
-        color: Colors.lime[100],
-        child: Stack(
-          children: [
+        visible: _isRecommendMessageWidgetVisible,
+        child: Container(
+          width: double.infinity,
+          color: Colors.lime[100],
+          child: Stack(children: [
             recommandMessageCard(),
-            // Close button
             Positioned(
               right: 0,
-              child: Row(
-                children: [
-                  BlocBuilder<MessageSendBloc, MessageSendState>(
-                    builder: (context, state) {
-                      if (state is ChatGPTSendMessageSendingState) {
-                        return const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 16),
-                          child: SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                            ),
+              child: Row(children: [
+                BlocBuilder<MessageSendBloc, MessageSendState>(
+                  builder: (context, state) {
+                    if (state is ChatGPTSendMessageSendingState) {
+                      return const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16),
+                        child: SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
                           ),
-                        );
-                      } else {
-                        return IconButton(
-                          onPressed: () {
-                            if (_textEditingController.text.isNotEmpty) {
-                              context.read<MessageSendBloc>().add(
-                                  ChatGptRecommendMessageEvent(
-                                      _textEditingController.text));
-                              //새로고침 로그 기록
-                              _logChatAction(ChatAction.refresh);
-                            }
-                          },
-                          icon: const Icon(Icons.refresh,
-                              color: Colors.blueAccent),
-                        );
-                      }
-                    },
-                  ),
-                  IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _isRecommendMessageWidgetVisible = false;
-                        // 로그 기록 (추천 메시지 창 닫은 경우)
-                        _logChatAction(ChatAction.recommendMessageCardClose);
-                      });
-                    },
-                    icon: const Icon(Icons.close),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+                        ),
+                      );
+                    } else {
+                      return IconButton(
+                        onPressed: () {
+                          if (_textEditingController.text.isNotEmpty) {
+                            context.read<MessageSendBloc>().add(
+                                ChatGptRecommendMessageEvent(
+                                    _textEditingController.text));
+                            //새로고침 로그 기록
+                            _logChatAction(ChatAction.refresh);
+                          }
+                        },
+                        icon:
+                            const Icon(Icons.refresh, color: Colors.blueAccent),
+                      );
+                    }
+                  },
+                ),
+                IconButton(
+                  onPressed: () {
+                    setState(() {
+                      _isRecommendMessageWidgetVisible = false;
+                      _logChatAction(ChatAction.recommendMessageCardClose);
+                    });
+                  },
+                  icon: const Icon(Icons.close),
+                )
+              ]),
+            )
+          ]),
+        ));
   }
 
   Widget recommandMessageCard() {
     return InkWell(
-      child: Card(
-        margin: const EdgeInsets.fromLTRB(10, 10, 100, 10),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(8, 3, 8, 3),
-          child: Text(
-            recommandMessage ?? '',
-            style: const TextStyle(fontSize: 14),
-          ),
-        ),
-      ),
-      onTap: () {
-        setState(() {
-          _isRecommendMessageWidgetVisible = false;
-          saveMessageToFirebase(
-            convertMessageContent: recommandMessage!,
-            isConvertMessage: true,
-            originalSentiment: sensibility ?? '',
-            sendMessageSentiment: '',
-          );
-
-          //추천메시지 카드 클릭시 로그 기록
-          _logChatAction(ChatAction.recommandMessageCard);
+        child: Card(
+            margin: const EdgeInsets.fromLTRB(10, 10, 100, 10),
+            child: Padding(
+                padding: const EdgeInsets.fromLTRB(8, 3, 8, 3),
+                child: Text(
+                  recommandMessage ?? '',
+                  style: const TextStyle(fontSize: 14),
+                ))),
+        onTap: () {
+          setState(() {
+            _isRecommendMessageWidgetVisible = false;
+            saveMessageToFirebase(
+              convertMessageContent: recommandMessage!,
+              isConvertMessage: true,
+              originalSentiment: sensibility ?? '',
+              sendMessageSentiment: '',
+            );
+            _logChatAction(ChatAction.recommandMessageCard);
+          });
         });
-      },
-    );
   }
 }

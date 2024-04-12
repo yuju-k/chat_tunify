@@ -7,7 +7,6 @@ import 'package:chat_tunify/bloc/message_receive_bloc.dart';
 // Events
 abstract class MessageSendEvent {}
 
-//Azure Event
 class AzureSentimentAnalysisEvent extends MessageSendEvent {
   final String text;
 
@@ -18,29 +17,6 @@ class AzureSentimentAnalysisEvent2 extends MessageSendEvent {
   final String text;
 
   AzureSentimentAnalysisEvent2(this.text);
-}
-
-//Azure Status
-class AzureSentimentAnalysisInitialState extends MessageSendState {}
-
-class AzureSentimentAnalysisProcessingState extends MessageSendState {}
-
-class AzureSentimentAnalysisSuccessState extends MessageSendState {
-  final String analysisResult;
-
-  AzureSentimentAnalysisSuccessState(this.analysisResult);
-}
-
-class AzureSentimentAnalysisSuccessState2 extends MessageSendState {
-  final String analysisResult;
-
-  AzureSentimentAnalysisSuccessState2(this.analysisResult);
-}
-
-class AzureSentimentAnalysisErrorState extends MessageSendState {
-  final String error;
-
-  AzureSentimentAnalysisErrorState(this.error);
 }
 
 class ChatGptSendMessageEvent extends MessageSendEvent {
@@ -77,7 +53,6 @@ class FirebaseMessageSaveEvent extends MessageSendEvent {
   });
 }
 
-// 추천메시지 생성 이벤트
 class ChatGptRecommendMessageEvent extends MessageSendEvent {
   final String negativeMessage;
 
@@ -86,6 +61,28 @@ class ChatGptRecommendMessageEvent extends MessageSendEvent {
 
 // States
 abstract class MessageSendState {}
+
+class AzureSentimentAnalysisInitialState extends MessageSendState {}
+
+class AzureSentimentAnalysisProcessingState extends MessageSendState {}
+
+class AzureSentimentAnalysisSuccessState extends MessageSendState {
+  final String analysisResult;
+
+  AzureSentimentAnalysisSuccessState(this.analysisResult);
+}
+
+class AzureSentimentAnalysisSuccessState2 extends MessageSendState {
+  final String analysisResult;
+
+  AzureSentimentAnalysisSuccessState2(this.analysisResult);
+}
+
+class AzureSentimentAnalysisErrorState extends MessageSendState {
+  final String error;
+
+  AzureSentimentAnalysisErrorState(this.error);
+}
 
 class ChatGptSendMessageInitialState extends MessageSendState {}
 
@@ -115,7 +112,6 @@ class FirebaseMessageSaveSendErrorState extends MessageSendState {
   FirebaseMessageSaveSendErrorState(this.error);
 }
 
-// 추천메시지 생성 상태
 class ChatGptRecommendMessageState extends MessageSendState {
   final String chatGptRecommendResponse;
 
@@ -130,10 +126,13 @@ class MessageSendBloc extends Bloc<MessageSendEvent, MessageSendState> {
   final MessageReceiveBloc messageReceiveBloc;
   final AuthenticationBloc authBloc;
 
-  MessageSendBloc(this.chatGPTService, this.azureSentimentAnalysisService,
-      this.messageReceiveBloc, this.authBloc,
-      {required this.databaseReference})
-      : super(ChatGptSendMessageInitialState()) {
+  MessageSendBloc(
+    this.chatGPTService,
+    this.azureSentimentAnalysisService,
+    this.messageReceiveBloc,
+    this.authBloc, {
+    required this.databaseReference,
+  }) : super(ChatGptSendMessageInitialState()) {
     on<AzureSentimentAnalysisEvent>(_onAzureSentimentAnalysisEvent);
     on<AzureSentimentAnalysisEvent2>(_onAzureSentimentAnalysisEvent2);
     on<FirebaseMessageSaveEvent>(_onFirebaseMessageSaveEvent);
@@ -174,7 +173,6 @@ class MessageSendBloc extends Bloc<MessageSendEvent, MessageSendState> {
   ) async {
     emit(ChatGPTSendMessageSendingState());
     try {
-      // 현재 로그인한 사용자의 이름을 가져옴
       final currentState = authBloc.state;
       String currentUser;
       if (currentState is AuthenticationSuccess) {
@@ -193,12 +191,9 @@ class MessageSendBloc extends Bloc<MessageSendEvent, MessageSendState> {
                   : "상대방: ${message.originalMessageContent}")
           .toList();
 
-      //previousMessageContent 리스트에서 가장 아래에 있는 메시지부터 추출
       if (previousMessagesContent.length > 20) {
         previousMessagesContent = previousMessagesContent
             .sublist(previousMessagesContent.length - 20);
-      } else {
-        previousMessagesContent = previousMessagesContent;
       }
 
       final chatGptRecommandResponse =
@@ -234,7 +229,6 @@ class MessageSendBloc extends Bloc<MessageSendEvent, MessageSendState> {
         'backspaceCount': event.backspaceCount,
       });
 
-      // Then, update the last_message field in the chat_rooms node
       DatabaseReference lastMessageRef =
           databaseReference.child('chat_rooms/${event.roomId}/last_message');
       await lastMessageRef.set(event.isConvertMessage
