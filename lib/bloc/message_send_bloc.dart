@@ -37,6 +37,7 @@ class FirebaseMessageSaveEvent extends MessageSendEvent {
   final String originalSentiment;
   final String sendMessageSentiment;
   final int backspaceCount;
+  final int refreshMessage;
 
   FirebaseMessageSaveEvent({
     required this.roomId,
@@ -50,6 +51,7 @@ class FirebaseMessageSaveEvent extends MessageSendEvent {
     required this.originalSentiment,
     required this.sendMessageSentiment,
     required this.backspaceCount,
+    required this.refreshMessage,
   });
 }
 
@@ -236,6 +238,7 @@ class MessageSendBloc extends Bloc<MessageSendEvent, MessageSendState> {
         'sendMessageSentiment': event.sendMessageSentiment,
         'timestamp': event.timestamp,
         'backspaceCount': event.backspaceCount,
+        'refreshMessage': event.refreshMessage,
       });
 
       DatabaseReference lastMessageRef =

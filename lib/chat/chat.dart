@@ -53,6 +53,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   int _previousMessageCount = 0;
   String previousText = '';
   int backspaceCount = 0;
+  int refreshMessageCount = 0;
 
   // Mode variables
   bool originalMessageCheckMode = false;
@@ -93,12 +94,14 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
           originalSentiment: originalSentiment,
           sendMessageSentiment: sendMessageSentiment,
           backspaceCount: backspaceCount,
+          refreshMessage: refreshMessageCount,
         ));
 
     //텍스트 필드 비우기
     _textEditingController.clear();
     setState(() {
       backspaceCount = 0;
+      refreshMessageCount = 0;
     });
   }
 
@@ -547,6 +550,9 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                       return IconButton(
                         onPressed: () {
                           if (_textEditingController.text.isNotEmpty) {
+                            setState(() {
+                              refreshMessageCount++; // refreshMessageCount 증가
+                            });
                             context.read<MessageSendBloc>().add(
                                 ChatGptRecommendMessageEvent(
                                     _textEditingController.text, roomId));

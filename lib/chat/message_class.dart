@@ -9,6 +9,7 @@ class Message {
   final String sendMessageSentiment; //보낸 메시지 말투 분석 결과 (최종)
   final String timestamp; //타임스탬프 (보낸 시간)
   final int backspaceCount; //메시지 전송까지 백스페이스 누른 횟수
+  final int refreshMessage; //메시지에서 새로고침 누른 횟수
 
   Message({
     required this.senderName,
@@ -21,6 +22,7 @@ class Message {
     required this.sendMessageSentiment,
     required this.timestamp,
     required this.backspaceCount,
+    required this.refreshMessage,
   });
 
   factory Message.fromMap(Map<dynamic, dynamic> map) {
@@ -35,6 +37,7 @@ class Message {
       sendMessageSentiment: map['sendMessageSentiment'] as String,
       senderEmail: map['senderEmail'] as String,
       backspaceCount: map['backspaceCount'] as int,
+      refreshMessage: map['refreshMessage'] as int,
     );
   }
 }
