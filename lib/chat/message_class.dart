@@ -2,6 +2,7 @@ class Message {
   final String senderName; //보낸사람
   final String senderUID; //보낸사람 UID
   final String senderEmail; //보낸사람 이메일
+  final String firstMessageContent; //첫 메시지
   final String originalMessageContent; //원본 메시지
   final String convertMessageContent; //변경된 메시지(추천메시지 내용)
   final bool isConvertMessage; //변환된 메시지인가?
@@ -15,6 +16,7 @@ class Message {
     required this.senderName,
     required this.senderUID,
     required this.senderEmail,
+    required this.firstMessageContent,
     required this.originalMessageContent,
     required this.convertMessageContent,
     required this.isConvertMessage,
@@ -29,6 +31,7 @@ class Message {
     return Message(
       senderName: map['senderName'] as String,
       senderUID: map['senderUID'] as String,
+      firstMessageContent: map['firstMessageContent'] as String,
       originalMessageContent: map['originalMessageContent'] as String,
       convertMessageContent: map['convertMessageContent'] as String,
       timestamp: map['timestamp'] as String,

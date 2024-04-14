@@ -46,6 +46,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
 
   // Chat message variables
   String? recommandMessage;
+  String? firstMessageContent;
   String? sensibility;
   String? sendSensibility;
   final Map<String, bool> _originalMessageVisibility = {};
@@ -78,6 +79,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   }
 
   void saveMessageToFirebase({
+    required String firstMessageContent,
     required String convertMessageContent,
     required bool isConvertMessage,
     required String originalSentiment,
@@ -88,6 +90,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
           senderEmail: FirebaseAuth.instance.currentUser!.email!,
           senderName: myName!,
           senderUID: myUid!,
+          firstMessageContent: firstMessageContent,
           originalMessageContent: _textEditingController.text,
           convertMessageContent: convertMessageContent,
           timestamp: DateTime.now().toString(),
@@ -231,6 +234,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                 } else {
                   //mixed, neutral, positive 일 때
                   saveMessageToFirebase(
+                    firstMessageContent: '',
                     convertMessageContent: '',
                     isConvertMessage: false,
                     originalSentiment: state.analysisResult,
@@ -460,6 +464,11 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                               AzureSentimentAnalysisEvent(
                                   _textEditingController.text));
 
+                          setState(() {
+                            //텍스트 컨트롤러에 있는 메시지를 임시저장
+                            firstMessageContent = _textEditingController.text;
+                          });
+
                           //메시지 전송 로그 기록
                           context.read<ChatActionLogBloc>().add(
                               ChatActionLogEvent(
@@ -513,6 +522,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                         sendSensibility = state.analysisResult;
 
                         saveMessageToFirebase(
+                          firstMessageContent: firstMessageContent!,
                           convertMessageContent: recommandMessage!,
                           isConvertMessage: false,
                           originalSentiment: sensibility!,
@@ -604,6 +614,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
           setState(() {
             _isRecommendMessageWidgetVisible = false;
             saveMessageToFirebase(
+              firstMessageContent: '',
               convertMessageContent: recommandMessage!,
               isConvertMessage: true,
               originalSentiment: sensibility ?? '',

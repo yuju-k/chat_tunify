@@ -30,6 +30,7 @@ class FirebaseMessageSaveEvent extends MessageSendEvent {
   final String senderEmail;
   final String senderName;
   final String senderUID;
+  final String firstMessageContent;
   final String originalMessageContent;
   final String convertMessageContent;
   final String timestamp;
@@ -44,6 +45,7 @@ class FirebaseMessageSaveEvent extends MessageSendEvent {
     required this.senderEmail,
     required this.senderName,
     required this.senderUID,
+    required this.firstMessageContent,
     required this.originalMessageContent,
     required this.convertMessageContent,
     required this.timestamp,
@@ -232,6 +234,7 @@ class MessageSendBloc extends Bloc<MessageSendEvent, MessageSendState> {
         'senderUID': event.senderUID,
         'senderName': event.senderName,
         'senderEmail': event.senderEmail,
+        'firstMessageContent': event.firstMessageContent,
         'originalMessageContent': event.originalMessageContent,
         'convertMessageContent': event.convertMessageContent,
         'isConvertMessage': event.isConvertMessage,
