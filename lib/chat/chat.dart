@@ -215,7 +215,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                   //추천 메시지 ChatGPT Recommend Message Event
                   context.read<MessageSendBloc>().add(
                       ChatGptRecommendMessageEvent(
-                          _textEditingController.text));
+                          _textEditingController.text, roomId));
                 } else {
                   //mixed, neutral, positive 일 때
                   saveMessageToFirebase(
@@ -549,7 +549,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                           if (_textEditingController.text.isNotEmpty) {
                             context.read<MessageSendBloc>().add(
                                 ChatGptRecommendMessageEvent(
-                                    _textEditingController.text));
+                                    _textEditingController.text, roomId));
                             //새로고침 로그 기록
                             _logChatAction(ChatAction.refresh);
                           }

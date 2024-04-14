@@ -55,8 +55,9 @@ class FirebaseMessageSaveEvent extends MessageSendEvent {
 
 class ChatGptRecommendMessageEvent extends MessageSendEvent {
   final String negativeMessage;
+  final String roomId;
 
-  ChatGptRecommendMessageEvent(this.negativeMessage);
+  ChatGptRecommendMessageEvent(this.negativeMessage, this.roomId);
 }
 
 // States
@@ -201,6 +202,14 @@ class MessageSendBloc extends Bloc<MessageSendEvent, MessageSendState> {
         event.negativeMessage,
         previousMessagesContent,
       );
+
+      DatabaseReference gptMessageRef = databaseReference
+          .child('chat_rooms/${event.roomId}/gpt_messages')
+          .push();
+      await gptMessageRef.set({
+        'messages': chatGptRecommandResponse,
+        'timestamp': DateTime.now().toString(),
+      });
 
       emit(ChatGptRecommendMessageState(chatGptRecommandResponse));
     } catch (e) {
