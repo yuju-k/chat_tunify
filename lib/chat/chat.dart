@@ -58,6 +58,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   // Mode variables
   bool originalMessageCheckMode = false;
   bool isConvertMessageCheckMode = false;
+  bool recommendMessageMode = true; // 추가
 
   // Other variables
   double keyboardHeight = 0;
@@ -149,6 +150,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
           return ModeOnOffWidget(
               originalMessageCheckMode: originalMessageCheckMode,
               isConvertMessageCheckMode: isConvertMessageCheckMode,
+              recommendMessageMode: recommendMessageMode, // 추가
               onOriginalMessageCheckModeChanged: (value) {
                 setState(() {
                   originalMessageCheckMode = value;
@@ -157,6 +159,12 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
               onConvertMessageCheckModeChanged: (value) {
                 setState(() {
                   isConvertMessageCheckMode = value;
+                });
+              },
+              onRecommendMessageModeChanged: (value) {
+                // 추가
+                setState(() {
+                  recommendMessageMode = value;
                 });
               });
         });
@@ -212,7 +220,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
             BlocListener<MessageSendBloc, MessageSendState>(
                 listener: (context, state) {
               if (state is AzureSentimentAnalysisSuccessState) {
-                if (state.analysisResult == 'negative') {
+                if (state.analysisResult == 'negative' &&
+                    recommendMessageMode) {
                   sensibility = state.analysisResult;
 
                   //추천 메시지 ChatGPT Recommend Message Event

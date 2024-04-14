@@ -3,15 +3,19 @@ import 'package:flutter/material.dart';
 class ModeOnOffWidget extends StatefulWidget {
   final bool originalMessageCheckMode;
   final bool isConvertMessageCheckMode;
+  final bool recommendMessageMode;
   final Function(bool) onOriginalMessageCheckModeChanged;
   final Function(bool) onConvertMessageCheckModeChanged;
+  final Function(bool) onRecommendMessageModeChanged;
 
   const ModeOnOffWidget({
     super.key,
     required this.originalMessageCheckMode,
     required this.isConvertMessageCheckMode,
+    required this.recommendMessageMode,
     required this.onOriginalMessageCheckModeChanged,
     required this.onConvertMessageCheckModeChanged,
+    required this.onRecommendMessageModeChanged,
   });
 
   @override
@@ -21,12 +25,14 @@ class ModeOnOffWidget extends StatefulWidget {
 class ModeOnOffWidgetState extends State<ModeOnOffWidget> {
   late bool _originalMessageCheckMode;
   late bool _isConvertMessageCheckMode;
+  late bool _recommendMessageMode;
 
   @override
   void initState() {
     super.initState();
     _originalMessageCheckMode = widget.originalMessageCheckMode;
     _isConvertMessageCheckMode = widget.isConvertMessageCheckMode;
+    _recommendMessageMode = widget.recommendMessageMode;
   }
 
   @override
@@ -66,6 +72,23 @@ class ModeOnOffWidgetState extends State<ModeOnOffWidget> {
                     });
                     // Same here for the main page update if necessary
                     setState(() {});
+                  },
+                  activeTrackColor: Colors.lightGreenAccent,
+                  activeColor: Colors.green,
+                ),
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text('추천 메시지 모드'),
+                Switch(
+                  value: _recommendMessageMode,
+                  onChanged: (value) {
+                    setModalState(() {
+                      _recommendMessageMode = value;
+                    });
+                    widget.onRecommendMessageModeChanged(value);
                   },
                   activeTrackColor: Colors.lightGreenAccent,
                   activeColor: Colors.green,
