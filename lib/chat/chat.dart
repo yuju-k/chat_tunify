@@ -58,7 +58,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   // Mode variables
   bool originalMessageCheckMode = false;
   bool isConvertMessageCheckMode = false;
-  bool recommendMessageMode = true; // 추가
+  bool recommendMessageMode = true;
 
   // Other variables
   double keyboardHeight = 0;
