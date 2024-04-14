@@ -209,6 +209,7 @@ class MessageSendBloc extends Bloc<MessageSendEvent, MessageSendState> {
           .child('chat_rooms/${event.roomId}/gpt_messages')
           .push();
       await gptMessageRef.set({
+        'originalMessageContent': event.negativeMessage,
         'messages': chatGptRecommandResponse,
         'timestamp': DateTime.now().toString(),
       });
