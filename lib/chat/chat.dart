@@ -593,7 +593,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
           padding: const EdgeInsets.fromLTRB(8, 3, 8, 3),
           child: RichText(
             text: TextSpan(
-              style: const TextStyle(fontSize: 14),
+              style: const TextStyle(fontSize: 16),
               children: [
                 const TextSpan(
                     text: "예상되는 상대방의 감정: ",
