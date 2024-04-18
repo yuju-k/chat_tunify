@@ -566,22 +566,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                         ),
                       );
                     } else {
-                      return IconButton(
-                        onPressed: () {
-                          if (_textEditingController.text.isNotEmpty) {
-                            setState(() {
-                              refreshMessageCount++; // refreshMessageCount 증가
-                            });
-                            context.read<MessageSendBloc>().add(
-                                ChatGptRecommendMessageEvent(
-                                    _textEditingController.text, roomId));
-                            //새로고침 로그 기록
-                            _logChatAction(ChatAction.refresh);
-                          }
-                        },
-                        icon:
-                            const Icon(Icons.refresh, color: Colors.blueAccent),
-                      );
+                      // 빈상자
+                      return const SizedBox();
                     }
                   },
                 ),
@@ -601,27 +587,27 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   }
 
   Widget recommandMessageCard() {
-    return InkWell(
-        child: Card(
-            margin: const EdgeInsets.fromLTRB(10, 10, 100, 10),
-            child: Padding(
-                padding: const EdgeInsets.fromLTRB(8, 3, 8, 3),
-                child: Text(
-                  recommandMessage ?? '',
-                  style: const TextStyle(fontSize: 14),
-                ))),
-        onTap: () {
-          setState(() {
-            _isRecommendMessageWidgetVisible = false;
-            saveMessageToFirebase(
-              firstMessageContent: '',
-              convertMessageContent: recommandMessage!,
-              isConvertMessage: true,
-              originalSentiment: sensibility ?? '',
-              sendMessageSentiment: '',
-            );
-            _logChatAction(ChatAction.recommandMessageCard);
-          });
-        });
+    return Card(
+        margin: const EdgeInsets.fromLTRB(10, 10, 100, 10),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(8, 3, 8, 3),
+          child: RichText(
+            text: TextSpan(
+              style: const TextStyle(fontSize: 14),
+              children: [
+                const TextSpan(
+                    text: "예상되는 상대방의 감정: ",
+                    style: TextStyle(color: Colors.black)),
+                TextSpan(
+                  text: "$recommandMessage",
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ));
   }
 }
