@@ -125,15 +125,15 @@ class ChatGptRecommendMessageState extends MessageSendState {
 
 // BLoC
 class MessageSendBloc extends Bloc<MessageSendEvent, MessageSendState> {
-  final ChatGPTService chatGPTService;
-  final AzureSentimentAnalysisService azureSentimentAnalysisService;
+  final MessageGenerationService messageGenerationService;
+  final GoogleNLPService googleNLPService;
   final DatabaseReference databaseReference;
   final MessageReceiveBloc messageReceiveBloc;
   final AuthenticationBloc authBloc;
 
   MessageSendBloc(
-    this.chatGPTService,
-    this.azureSentimentAnalysisService,
+    this.messageGenerationService,
+    this.googleNLPService,
     this.messageReceiveBloc,
     this.authBloc, {
     required this.databaseReference,
@@ -151,7 +151,7 @@ class MessageSendBloc extends Bloc<MessageSendEvent, MessageSendState> {
     emit(AzureSentimentAnalysisProcessingState());
     try {
       final analysisResult =
-          await azureSentimentAnalysisService.analyzeSentiment(event.text);
+          await googleNLPService.analyzeSentiment(event.text);
       emit(AzureSentimentAnalysisSuccessState(analysisResult));
     } catch (e) {
       emit(AzureSentimentAnalysisErrorState(e.toString()));
@@ -165,7 +165,7 @@ class MessageSendBloc extends Bloc<MessageSendEvent, MessageSendState> {
     emit(AzureSentimentAnalysisProcessingState());
     try {
       final analysisResult =
-          await azureSentimentAnalysisService.analyzeSentiment(event.text);
+          await googleNLPService.analyzeSentiment(event.text);
       emit(AzureSentimentAnalysisSuccessState2(analysisResult));
     } catch (e) {
       emit(AzureSentimentAnalysisErrorState(e.toString()));
@@ -202,7 +202,7 @@ class MessageSendBloc extends Bloc<MessageSendEvent, MessageSendState> {
       }
 
       final chatGptRecommandResponse =
-          await chatGPTService.recommandMessageRequest(
+          await messageGenerationService.generateResponse(
         event.negativeMessage,
         previousMessagesContent,
       );

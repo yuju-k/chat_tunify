@@ -100,8 +100,8 @@ class MyApp extends StatelessWidget {
             BlocProvider<AuthenticationBloc>(create: (context) => authBloc),
             BlocProvider<MessageSendBloc>(
               create: (context) => MessageSendBloc(
-                ChatGPTService(),
-                AzureSentimentAnalysisService(),
+                MessageGenerationService(),
+                GoogleNLPService(),
                 context.read<MessageReceiveBloc>(),
                 authBloc,
                 databaseReference: db.FirebaseDatabase.instance.ref(),
