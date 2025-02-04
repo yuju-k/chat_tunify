@@ -2,6 +2,15 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
+//프로젝트 최상위 폴더에 .env 파일을 추가하세요.
+//-- .env 파일 내용 --
+// AZURE_API_KEY=your_azure_api_key_here
+// AZURE_END_POINT=https://your_azure_endpoint_here
+// AZURE_SENTIMENT_PATH=/text/analytics/v3.0/sentiment
+//
+// OPENAI_END_POINT=https://api.openai.com/v1/chat/completions
+// OPENAI_API_KEY=your_openai_api_key_here
+
 //감정 판독
 class AzureSentimentAnalysisService {
   final String _azureApiKey = dotenv.env['AZURE_API_KEY']!;

@@ -9,7 +9,7 @@ abstract class ChatRoomEvent {
 }
 
 class CheckChatRoomExist extends ChatRoomEvent {
-  CheckChatRoomExist(String friendEmail) : super(friendEmail);
+  CheckChatRoomExist(super.friendEmail);
 }
 
 class LoadChatRoom extends ChatRoomEvent {
@@ -18,7 +18,7 @@ class LoadChatRoom extends ChatRoomEvent {
 }
 
 class CreateChatRoom extends ChatRoomEvent {
-  CreateChatRoom(String friendEmail) : super(friendEmail);
+  CreateChatRoom(super.friendEmail);
 }
 
 abstract class ChatRoomState {}
