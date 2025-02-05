@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart' as db;
 import 'firebase_options.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import 'package:chat_tunify/home.dart';
 
@@ -121,10 +122,24 @@ class MyApp extends StatelessWidget {
             ),
           ],
           child: MaterialApp(
-            title: 'ChatTunify',
+            title: 'MoodWave',
             theme: ThemeData(
-              colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
               useMaterial3: true,
+
+              // Define the default font family.
+              textTheme: GoogleFonts.nanumGothicTextTheme(
+                Theme.of(context).textTheme,
+              ),
+
+              // Define the default brightness and colors.
+              colorScheme: ColorScheme.fromSeed(
+                seedColor: Color(0xFFA9ECA2),
+                dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
+                brightness: Brightness.light,
+              ).copyWith(
+                surface: Colors.lightGreen[50], // 배경색
+                primary: Colors.black, // 기본 글자색
+              ),
             ),
             home: homeScreen, // 조건에 따라 결정된 홈 스크린
             routes: {
