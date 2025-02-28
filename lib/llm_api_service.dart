@@ -5,9 +5,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 //프로젝트 최상위 폴더에 .env 파일을 추가하세요.
 //-- .env 파일 내용 --
-// AZURE_API_KEY=your_azure_api_key_here
-// AZURE_END_POINT=https://language.googleapis.com/v2/documents:analyzeSentiment
-// AZURE_SENTIMENT_PATH=/text/analytics/v3.0/sentiment
+// GOOGLE_API_KEY=your_azure_api_key_here
+// GOOGLE_NLP_ENDPOINT=https://language.googleapis.com/v2/documents:analyzeSentiment
 //
 
 //감정 판독(Sentiment Analysis) API

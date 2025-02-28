@@ -98,7 +98,7 @@ class MyApp extends StatelessWidget {
             BlocProvider.value(
               value: messageReceiveBloc, // 기존의 MessageReceiveBloc을 사용
             ),
-            BlocProvider<AuthenticationBloc>(create: (context) => authBloc),
+            BlocProvider.value(value: authBloc),
             BlocProvider<MessageSendBloc>(
               create: (context) => MessageSendBloc(
                 MessageGenerationService(),
@@ -110,9 +110,6 @@ class MyApp extends StatelessWidget {
             ),
             BlocProvider(
               create: (context) => ContactsBloc(),
-            ),
-            BlocProvider(
-              create: (context) => AuthenticationBloc(FirebaseAuth.instance),
             ),
             BlocProvider(
               create: (context) => ProfileBloc(),
