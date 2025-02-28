@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:chat_tunify/bloc/contacts_bloc.dart';
 import 'package:chat_tunify/contacts/add_friend.dart';
+import 'package:rxdart/rxdart.dart';
 
 class ContactsPage extends StatefulWidget {
   const ContactsPage({super.key});
@@ -14,6 +15,7 @@ class ContactsPage extends StatefulWidget {
 class _ContactsPageState extends State<ContactsPage> {
   final FocusNode _focusNode = FocusNode();
   final TextEditingController _searchTextcontroller = TextEditingController();
+  final _searchSubject = PublishSubject<String>();
   bool _isSearchingFocus = false;
 
   @override
@@ -21,12 +23,16 @@ class _ContactsPageState extends State<ContactsPage> {
     super.initState();
     _focusNode.addListener(_onFocusChange);
     context.read<ContactsBloc>().add(LoadContacts());
+
+    // rxdart; 검색 쿼리 디바운싱(Debouncing) 추가
+    _searchSubject.debounceTime(const Duration(milliseconds: 300)).listen((query)=>_searchContacts(query));
   }
 
   @override
   void dispose() {
     _focusNode.dispose();
     _searchTextcontroller.dispose();
+    _searchSubject.close();
     super.dispose();
   }
 
@@ -88,9 +94,18 @@ class _ContactsPageState extends State<ContactsPage> {
             return _buildContactsView(state.searchResults);
           } else if (state is ContactsFailure) {
             return _buildErrorView(state.error);
-          } else {
-            return const Center(child: CircularProgressIndicator());
           }
+          return Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: const[
+                CircularProgressIndicator(),
+                SizedBox(height: 10),
+                Text('연락처를 불러오는 중입니다...'),
+              ],
+            ),
+          );
+
         },
       ),
     );
@@ -105,7 +120,7 @@ class _ContactsPageState extends State<ContactsPage> {
             child: TextField(
               focusNode: _focusNode,
               controller: _searchTextcontroller,
-              onChanged: _searchContacts,
+              onChanged: (value) => _searchSubject.add(value),
               decoration: InputDecoration(
                 hintText: '검색',
                 filled: true,
