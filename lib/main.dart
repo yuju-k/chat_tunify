@@ -7,7 +7,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart' as db;
 import 'firebase_options.dart';
 import 'package:google_fonts/google_fonts.dart';
-
 import 'package:chat_tunify/home.dart';
 import 'package:chat_tunify/auth/create.dart';
 import 'package:chat_tunify/auth/create_profile.dart';
@@ -30,11 +29,13 @@ Future<void> initializeFirebase() async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
+    print('Firebase initialized successfully');
   } on FirebaseException catch (e) {
     if (e.code != 'duplicate-app') {
+      print('Firebase initialization error: $e');
       rethrow;
     }
-    // If it's a duplicate app error, ignore it as the app is already initialized.
+    print('Firebase already initialized (duplicate-app ignored)');
   }
 }
 
@@ -53,7 +54,6 @@ class MyApp extends StatelessWidget {
     return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
-        // 로딩 중이거나 스트림이 연결되지 않은 경우 로딩 인디케이터를 표시
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const MaterialApp(
             home: Scaffold(
@@ -64,36 +64,28 @@ class MyApp extends StatelessWidget {
           );
         }
 
-        // 스트림이 연결되었고 데이터가 있을 때 화면을 설정
-        Widget homeScreen = const CreatePage(); // 기본 홈 스크린을 계정 생성 페이지로 설정
+        Widget homeScreen = const CreatePage();
         if (snapshot.connectionState == ConnectionState.active) {
           User? user = snapshot.data;
           if (user != null) {
-            homeScreen = const HomePage(); // 사용자가 로그인한 경우 홈 페이지로 설정
+            homeScreen = const HomePage();
           }
         }
 
-        // Firebase Database 참조
         final db.DatabaseReference databaseReference =
             db.FirebaseDatabase.instance.ref();
-
-        // BLoC 인스턴스 생성
         final authBloc = AuthenticationBloc(FirebaseAuth.instance);
         final messageReceiveBloc =
             MessageReceiveBloc(databaseReference: databaseReference);
 
         return MultiBlocProvider(
           providers: [
+            BlocProvider(create: (context) => ChatRoomBloc()),
             BlocProvider(
-              create: (context) => ChatRoomBloc(),
-            ),
-            BlocProvider(
-              create: (context) =>
-                  MessageReceiveBloc(databaseReference: databaseReference),
-            ),
-            BlocProvider.value(
-                value: messageReceiveBloc), // 기존 MessageReceiveBloc 재사용
-            BlocProvider.value(value: authBloc), // 기존 AuthenticationBloc 재사용
+                create: (context) =>
+                    MessageReceiveBloc(databaseReference: databaseReference)),
+            BlocProvider.value(value: messageReceiveBloc),
+            BlocProvider.value(value: authBloc),
             BlocProvider<MessageSendBloc>(
               create: (context) => MessageSendBloc(
                 messageGenerationService: MessageGenerationService(),
@@ -103,30 +95,24 @@ class MyApp extends StatelessWidget {
                 databaseReference: databaseReference,
               ),
             ),
+            BlocProvider(create: (context) => ContactsBloc()),
+            BlocProvider(create: (context) => ProfileBloc()),
             BlocProvider(
-              create: (context) => ContactsBloc(),
-            ),
-            BlocProvider(
-              create: (context) => ProfileBloc(),
-            ),
-            BlocProvider(
-              create: (context) => ChatActionLogBloc(databaseReference),
-            ),
+                create: (context) => ChatActionLogBloc(databaseReference)),
           ],
           child: MaterialApp(
             title: 'MoodWave',
             theme: ThemeData(
               useMaterial3: true,
-              textTheme: GoogleFonts.nanumGothicTextTheme(
-                Theme.of(context).textTheme,
-              ),
+              textTheme:
+                  GoogleFonts.nanumGothicTextTheme(Theme.of(context).textTheme),
               colorScheme: ColorScheme.fromSeed(
                 seedColor: const Color(0xFFA9ECA2),
                 dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
                 brightness: Brightness.light,
               ).copyWith(
-                surface: Colors.lightGreen[50], // 배경색
-                primary: Colors.black, // 기본 글자색
+                surface: Colors.lightGreen[50],
+                primary: Colors.black,
               ),
             ),
             home: homeScreen,

@@ -1,12 +1,23 @@
 import 'package:firebase_vertexai/firebase_vertexai.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 // 감정 분석(Sentiment Analysis) 서비스
 class GoogleNLPService {
   late final GenerativeModel _model;
 
   GoogleNLPService() {
+    _initializeModel();
+  }
+
+  /// Firebase와 Vertex AI 모델을 초기화합니다.
+  void _initializeModel() {
+    // Firebase가 초기화되었는지 확인
+    if (Firebase.apps.isEmpty) {
+      throw Exception(
+          'Firebase is not initialized. Call Firebase.initializeApp() first.');
+    }
     _model =
-        FirebaseVertexAI.instance.generativeModel(model: 'gemini-1.5-flash');
+        FirebaseVertexAI.instance.generativeModel(model: 'gemini-2.0-flash');
   }
 
   /// 주어진 텍스트의 감정을 분석하여 'negative', 'neutral', 'positive' 중 하나를 반환합니다.
@@ -23,6 +34,7 @@ class GoogleNLPService {
       final sentiment = response.text?.trim().toLowerCase() ?? 'neutral';
 
       if (!['negative', 'neutral', 'positive'].contains(sentiment)) {
+        print('Unexpected sentiment value: $sentiment');
         return 'neutral'; // 모델이 예상치 못한 응답을 반환할 경우 기본값
       }
       return sentiment;
@@ -38,6 +50,16 @@ class MessageGenerationService {
   late final GenerativeModel _model;
 
   MessageGenerationService() {
+    _initializeModel();
+  }
+
+  /// Firebase와 Vertex AI 모델을 초기화합니다.
+  void _initializeModel() {
+    // Firebase가 초기화되었는지 확인
+    if (Firebase.apps.isEmpty) {
+      throw Exception(
+          'Firebase is not initialized. Call Firebase.initializeApp() first.');
+    }
     _model =
         FirebaseVertexAI.instance.generativeModel(model: 'gemini-1.5-flash');
   }
@@ -58,7 +80,12 @@ ${previousMessages.join('\n')}
       ];
 
       final response = await _model.generateContent(prompt);
-      return response.text?.trim() ?? message; // 생성된 메시지 반환, 실패 시 원본 반환
+      final generatedMessage = response.text?.trim();
+      if (generatedMessage == null || generatedMessage.isEmpty) {
+        print('Generated message is empty for input: $message');
+        return message; // 생성 실패 시 원본 반환
+      }
+      return generatedMessage;
     } catch (e) {
       print('Message generation error: $e');
       return message; // 에러 발생 시 원본 메시지 반환
