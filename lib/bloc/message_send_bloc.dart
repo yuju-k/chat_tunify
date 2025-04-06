@@ -1,46 +1,38 @@
 import 'package:chat_tunify/bloc/auth_bloc.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:firebase_database/firebase_database.dart';
-import 'package:chat_tunify/llm_api_service.dart';
 import 'package:chat_tunify/bloc/message_receive_bloc.dart';
+import 'package:chat_tunify/llm_api_service.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-// Events
-abstract class MessageSendEvent {}
+// 이벤트 정의: 메시지 전송과 관련된 다양한 작업을 나타냄
+abstract class MessageSendEvent {
+  const MessageSendEvent();
+}
 
+// 감정 분석 요청 이벤트: 사용자가 입력한 텍스트의 감정을 분석
 class AzureSentimentAnalysisEvent extends MessageSendEvent {
-  final String text;
+  final String text; // 분석할 텍스트
 
-  AzureSentimentAnalysisEvent(this.text);
+  const AzureSentimentAnalysisEvent(this.text);
 }
 
-class AzureSentimentAnalysisEvent2 extends MessageSendEvent {
-  final String text;
-
-  AzureSentimentAnalysisEvent2(this.text);
-}
-
-class ChatGptSendMessageEvent extends MessageSendEvent {
-  final String message;
-
-  ChatGptSendMessageEvent(this.message);
-}
-
+// 메시지 저장 이벤트: 채팅 메시지를 Firebase에 저장
 class FirebaseMessageSaveEvent extends MessageSendEvent {
-  final String roomId;
-  final String senderEmail;
-  final String senderName;
-  final String senderUID;
-  final String firstMessageContent;
-  final String originalMessageContent;
-  final String convertMessageContent;
-  final String timestamp;
-  final bool isConvertMessage;
-  final String originalSentiment;
-  final String sendMessageSentiment;
-  final int backspaceCount;
-  final int refreshMessage;
+  final String roomId; // 채팅방 ID
+  final String senderEmail; // 발신자 이메일
+  final String senderName; // 발신자 이름
+  final String senderUID; // 발신자 UID
+  final String firstMessageContent; // 최초 메시지 내용
+  final String originalMessageContent; // 원본 메시지 내용
+  final String convertMessageContent; // 변환된 메시지 내용 (예: 부정 메시지 수정 후)
+  final String timestamp; // 메시지 전송 시각
+  final bool isConvertMessage; // 메시지가 변환되었는지 여부
+  final String originalSentiment; // 원본 메시지의 감정 분석 결과
+  final String sendMessageSentiment; // 전송 메시지의 감정 분석 결과
+  final int backspaceCount; // 입력 중 백스페이스 사용 횟수
+  final int refreshMessage; // 메시지 새로고침 횟수
 
-  FirebaseMessageSaveEvent({
+  const FirebaseMessageSaveEvent({
     required this.roomId,
     required this.senderEmail,
     required this.senderName,
@@ -57,207 +49,205 @@ class FirebaseMessageSaveEvent extends MessageSendEvent {
   });
 }
 
-class ChatGptRecommendMessageEvent extends MessageSendEvent {
-  final String negativeMessage;
-  final String roomId;
+// 추천 메시지 요청 이벤트: 부정 메시지에 대한 대체 메시지 생성 요청
+class LlmRecommendMessageEvent extends MessageSendEvent {
+  final String negativeMessage; // 부정적인 메시지 내용
+  final String roomId; // 채팅방 ID
 
-  ChatGptRecommendMessageEvent(this.negativeMessage, this.roomId);
+  const LlmRecommendMessageEvent(this.negativeMessage, this.roomId);
 }
 
-// States
-abstract class MessageSendState {}
+// 상태 정의: 메시지 전송 및 처리 과정의 상태를 나타냄
+abstract class MessageSendState {
+  const MessageSendState();
+}
 
-class AzureSentimentAnalysisInitialState extends MessageSendState {}
+// 초기 상태: 메시지 전송 프로세스가 시작되기 전
+class MessageSendInitialState extends MessageSendState {
+  const MessageSendInitialState();
+}
 
-class AzureSentimentAnalysisProcessingState extends MessageSendState {}
+// 처리 중 상태: 메시지 처리(분석, 저장 등)가 진행 중
+class MessageSendProcessingState extends MessageSendState {
+  const MessageSendProcessingState();
+}
 
+// 감정 분석 성공 상태: 텍스트의 감정 분석 결과 반환
 class AzureSentimentAnalysisSuccessState extends MessageSendState {
-  final String analysisResult;
+  final String analysisResult; // 감정 분석 결과 (예: "positive", "negative")
 
-  AzureSentimentAnalysisSuccessState(this.analysisResult);
+  const AzureSentimentAnalysisSuccessState(this.analysisResult);
 }
 
-class AzureSentimentAnalysisSuccessState2 extends MessageSendState {
-  final String analysisResult;
+// 에러 상태: 처리 중 오류 발생 시
+class MessageSendErrorState extends MessageSendState {
+  final String error; // 오류 메시지
 
-  AzureSentimentAnalysisSuccessState2(this.analysisResult);
+  const MessageSendErrorState(this.error);
 }
 
-class AzureSentimentAnalysisErrorState extends MessageSendState {
-  final String error;
+// LLM 메시지 전송 성공 상태: 추천 메시지 생성 완료
+class LlmMessageSentState extends MessageSendState {
+  final String response; // LLM이 생성한 추천 메시지
 
-  AzureSentimentAnalysisErrorState(this.error);
+  const LlmMessageSentState(this.response);
 }
 
-class ChatGptSendMessageInitialState extends MessageSendState {}
-
-class ChatGPTSendMessageSendingState extends MessageSendState {}
-
-class ChatGPTSendMessageSentState extends MessageSendState {
-  final String chatGptResponse;
-
-  ChatGPTSendMessageSentState(this.chatGptResponse);
+// Firebase 메시지 저장 성공 상태: 메시지가 Firebase에 저장됨
+class FirebaseMessageSaveSentState extends MessageSendState {
+  const FirebaseMessageSaveSentState();
 }
 
-class ChatGPTSendMessageSendErrorState extends MessageSendState {
-  final String error;
-
-  ChatGPTSendMessageSendErrorState(this.error);
-}
-
-class FirebaseMessageSaveInitialState extends MessageSendState {}
-
-class FirebaseMessageSaveSendingState extends MessageSendState {}
-
-class FirebaseMessageSaveSentState extends MessageSendState {}
-
-class FirebaseMessageSaveSendErrorState extends MessageSendState {
-  final String error;
-
-  FirebaseMessageSaveSendErrorState(this.error);
-}
-
-class ChatGptRecommendMessageState extends MessageSendState {
-  final String chatGptRecommendResponse;
-
-  ChatGptRecommendMessageState(this.chatGptRecommendResponse);
-}
-
-// BLoC
+// BLoC 클래스: 메시지 전송 및 감정 분석 로직 관리
 class MessageSendBloc extends Bloc<MessageSendEvent, MessageSendState> {
-  final MessageGenerationService messageGenerationService;
-  final GoogleNLPService googleNLPService;
-  final DatabaseReference databaseReference;
-  final MessageReceiveBloc messageReceiveBloc;
-  final AuthenticationBloc authBloc;
+  final MessageGenerationService
+      messageGenerationService; // LLM 서비스 (추천 메시지 생성)
+  final GoogleNLPService googleNLPService; // 감정 분석 서비스
+  final DatabaseReference databaseReference; // Firebase 데이터베이스 참조
+  final MessageReceiveBloc messageReceiveBloc; // 수신 메시지 관리 BLoC
+  final AuthenticationBloc authBloc; // 사용자 인증 상태 관리 BLoC
 
-  MessageSendBloc(
-    this.messageGenerationService,
-    this.googleNLPService,
-    this.messageReceiveBloc,
-    this.authBloc, {
+  MessageSendBloc({
+    required this.messageGenerationService,
+    required this.googleNLPService,
     required this.databaseReference,
-  }) : super(ChatGptSendMessageInitialState()) {
-    on<AzureSentimentAnalysisEvent>(_onAzureSentimentAnalysisEvent);
-    on<AzureSentimentAnalysisEvent2>(_onAzureSentimentAnalysisEvent2);
-    on<FirebaseMessageSaveEvent>(_onFirebaseMessageSaveEvent);
-    on<ChatGptRecommendMessageEvent>(_onChatGptRecommendMessageEvent);
+    required this.messageReceiveBloc,
+    required this.authBloc,
+  }) : super(const MessageSendInitialState()) {
+    // 이벤트 핸들러 등록
+    on<AzureSentimentAnalysisEvent>(_handleAzureSentimentAnalysis);
+    on<FirebaseMessageSaveEvent>(_handleFirebaseMessageSave);
+    on<LlmRecommendMessageEvent>(_handleLlmRecommendMessage);
   }
 
-  Future<void> _onAzureSentimentAnalysisEvent(
+  // 감정 분석 이벤트 처리: 입력 텍스트의 감정을 분석
+  Future<void> _handleAzureSentimentAnalysis(
     AzureSentimentAnalysisEvent event,
     Emitter<MessageSendState> emit,
   ) async {
-    emit(AzureSentimentAnalysisProcessingState());
+    emit(const MessageSendProcessingState()); // 처리 중 상태로 전환
     try {
       final analysisResult =
           await googleNLPService.analyzeSentiment(event.text);
-      emit(AzureSentimentAnalysisSuccessState(analysisResult));
+      emit(AzureSentimentAnalysisSuccessState(analysisResult)); // 분석 결과 반환
     } catch (e) {
-      emit(AzureSentimentAnalysisErrorState(e.toString()));
+      emit(MessageSendErrorState(e.toString())); // 오류 발생 시 에러 상태
     }
   }
 
-  Future<void> _onAzureSentimentAnalysisEvent2(
-    AzureSentimentAnalysisEvent2 event,
+  // 추천 메시지 생성 이벤트 처리: 부정 메시지에 대한 대체 메시지 생성
+  Future<void> _handleLlmRecommendMessage(
+    LlmRecommendMessageEvent event,
     Emitter<MessageSendState> emit,
   ) async {
-    emit(AzureSentimentAnalysisProcessingState());
+    emit(const MessageSendProcessingState()); // 처리 중 상태로 전환
     try {
-      final analysisResult =
-          await googleNLPService.analyzeSentiment(event.text);
-      emit(AzureSentimentAnalysisSuccessState2(analysisResult));
-    } catch (e) {
-      emit(AzureSentimentAnalysisErrorState(e.toString()));
-    }
-  }
+      final currentUser = _getCurrentUserName(); // 현재 사용자 이름 가져오기
+      final previousMessages =
+          _getPreviousMessages(currentUser); // 이전 대화 내용 가져오기
 
-  Future<void> _onChatGptRecommendMessageEvent(
-    ChatGptRecommendMessageEvent event,
-    Emitter<MessageSendState> emit,
-  ) async {
-    emit(ChatGPTSendMessageSendingState());
-    try {
-      final currentState = authBloc.state;
-      String currentUser;
-      if (currentState is AuthenticationSuccess) {
-        currentUser = currentState.user.displayName ?? 'Unknown';
-      } else {
-        currentUser = 'Unknown';
-      }
-
-      List<String> previousMessagesContent = messageReceiveBloc.previousMessages
-          .map((message) => message.senderName == currentUser
-              ? message.isConvertMessage
-                  ? "나: ${message.convertMessageContent}"
-                  : "나: ${message.originalMessageContent}"
-              : message.isConvertMessage
-                  ? "상대방: ${message.convertMessageContent}"
-                  : "상대방: ${message.originalMessageContent}")
-          .toList();
-
-      if (previousMessagesContent.length > 20) {
-        previousMessagesContent = previousMessagesContent
-            .sublist(previousMessagesContent.length - 20);
-      }
-
-      final chatGptRecommandResponse =
-          await messageGenerationService.generateResponse(
+      // LLM을 통해 부정 메시지에 대한 추천 메시지 생성
+      final response = await messageGenerationService.generateResponse(
         event.negativeMessage,
-        previousMessagesContent,
+        previousMessages,
       );
 
-      DatabaseReference gptMessageRef = databaseReference
-          .child('chat_rooms/${event.roomId}/gpt_messages')
-          .push();
-      await gptMessageRef.set({
-        'originalMessageContent': event.negativeMessage,
-        'messages': chatGptRecommandResponse,
-        'timestamp': DateTime.now().toString(),
-      });
-
-      emit(ChatGptRecommendMessageState(chatGptRecommandResponse));
+      // 생성된 추천 메시지를 Firebase에 저장
+      await _saveGptMessageToFirebase(
+          event.roomId, event.negativeMessage, response);
+      emit(LlmMessageSentState(response)); // 성공 상태로 전환
     } catch (e) {
-      emit(ChatGPTSendMessageSendErrorState(e.toString()));
+      emit(MessageSendErrorState(e.toString())); // 오류 발생 시 에러 상태
     }
   }
 
-  Future<void> _onFirebaseMessageSaveEvent(
+  // 메시지 저장 이벤트 처리: 채팅 메시지를 Firebase에 저장
+  Future<void> _handleFirebaseMessageSave(
     FirebaseMessageSaveEvent event,
     Emitter<MessageSendState> emit,
   ) async {
-    emit(FirebaseMessageSaveSendingState());
+    emit(const MessageSendProcessingState()); // 처리 중 상태로 전환
     try {
-      DatabaseReference messageRef =
-          databaseReference.child('messages/${event.roomId}').push();
-      await messageRef.set({
-        'senderUID': event.senderUID,
-        'senderName': event.senderName,
-        'senderEmail': event.senderEmail,
-        'firstMessageContent': event.firstMessageContent,
-        'originalMessageContent': event.originalMessageContent,
-        'convertMessageContent': event.convertMessageContent,
-        'isConvertMessage': event.isConvertMessage,
-        'originalSentiment': event.originalSentiment,
-        'sendMessageSentiment': event.sendMessageSentiment,
-        'timestamp': event.timestamp,
-        'backspaceCount': event.backspaceCount,
-        'refreshMessage': event.refreshMessage,
-      });
-
-      DatabaseReference lastMessageRef =
-          databaseReference.child('chat_rooms/${event.roomId}/last_message');
-      await lastMessageRef.set(event.isConvertMessage
-          ? event.convertMessageContent
-          : event.originalMessageContent);
-
-      DatabaseReference lastMessageTimestampRef = databaseReference
-          .child('chat_rooms/${event.roomId}/last_message_timestamp');
-      await lastMessageTimestampRef.set(event.timestamp);
-
-      emit(FirebaseMessageSaveSentState());
+      await _saveMessageToFirebase(event); // 메시지 저장
+      await _updateLastMessage(event); // 마지막 메시지 정보 업데이트
+      emit(const FirebaseMessageSaveSentState()); // 성공 상태로 전환
     } catch (e) {
-      emit(FirebaseMessageSaveSendErrorState(e.toString()));
+      emit(MessageSendErrorState(e.toString())); // 오류 발생 시 에러 상태
     }
+  }
+
+  // 현재 사용자 이름 가져오기
+  String _getCurrentUserName() {
+    final currentState = authBloc.state;
+    if (currentState is AuthenticationSuccess) {
+      return currentState.user.displayName ?? 'Unknown';
+    }
+    return 'Unknown';
+  }
+
+  // 이전 대화 내용 가져오기 (최대 20개로 제한)
+  List<String> _getPreviousMessages(String currentUser) {
+    var messages = messageReceiveBloc.previousMessages.map((message) {
+      final prefix = message.senderName == currentUser ? '나' : '상대방'; // 발신자 구분
+      final content = message.isConvertMessage
+          ? message.convertMessageContent
+          : message.originalMessageContent;
+      return '$prefix: $content';
+    }).toList();
+
+    if (messages.length > 20) {
+      messages = messages.sublist(messages.length - 20); // 최근 20개만 사용
+    }
+    return messages;
+  }
+
+  // LLM 추천 메시지를 Firebase에 저장
+  Future<void> _saveGptMessageToFirebase(
+    String roomId,
+    String negativeMessage,
+    String response,
+  ) async {
+    final gptMessageRef =
+        databaseReference.child('chat_rooms/$roomId/gpt_messages').push();
+    await gptMessageRef.set({
+      'originalMessageContent': negativeMessage, // 원본 부정 메시지
+      'messages': response, // 추천 메시지
+      'timestamp': DateTime.now().toString(), // 저장 시각
+    });
+  }
+
+  // 채팅 메시지를 Firebase에 저장
+  Future<void> _saveMessageToFirebase(FirebaseMessageSaveEvent event) async {
+    final messageRef =
+        databaseReference.child('messages/${event.roomId}').push();
+    await messageRef.set({
+      'senderUID': event.senderUID,
+      'senderName': event.senderName,
+      'senderEmail': event.senderEmail,
+      'firstMessageContent': event.firstMessageContent,
+      'originalMessageContent': event.originalMessageContent,
+      'convertMessageContent': event.convertMessageContent,
+      'isConvertMessage': event.isConvertMessage,
+      'originalSentiment': event.originalSentiment,
+      'sendMessageSentiment': event.sendMessageSentiment,
+      'timestamp': event.timestamp,
+      'backspaceCount': event.backspaceCount,
+      'refreshMessage': event.refreshMessage,
+    });
+  }
+
+  // 채팅방의 마지막 메시지 정보 업데이트
+  Future<void> _updateLastMessage(FirebaseMessageSaveEvent event) async {
+    final lastMessageRef =
+        databaseReference.child('chat_rooms/${event.roomId}/last_message');
+    final lastMessageTimestampRef = databaseReference
+        .child('chat_rooms/${event.roomId}/last_message_timestamp');
+
+    final lastMessageContent = event.isConvertMessage
+        ? event.convertMessageContent
+        : event.originalMessageContent;
+
+    await lastMessageRef.set(lastMessageContent); // 마지막 메시지 내용 업데이트
+    await lastMessageTimestampRef.set(event.timestamp); // 마지막 메시지 타임스탬프 업데이트
   }
 }

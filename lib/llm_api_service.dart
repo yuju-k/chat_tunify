@@ -1,53 +1,39 @@
-import 'dart:convert';
 import 'package:firebase_vertexai/firebase_vertexai.dart';
-import 'package:http/http.dart' as http;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-//프로젝트 최상위 폴더에 .env 파일을 추가하세요.
-//-- .env 파일 내용 --
-// GOOGLE_API_KEY=your_google_api_key_here
-// GOOGLE_NLP_ENDPOINT=https://language.googleapis.com/v2/documents:analyzeSentiment
-//
-
-//감정 판독(Sentiment Analysis) API
+// 감정 분석(Sentiment Analysis) 서비스
 class GoogleNLPService {
-  final String _googleApiKey = dotenv.env['GOOGLE_API_KEY']!;
-  final String _googleNlpEndpoint = dotenv.env['GOOGLE_NLP_ENDPOINT']!;
+  late final GenerativeModel _model;
 
-  Future<String> analyzeSentiment(String text) async {
-    final uri = Uri.parse('$_googleNlpEndpoint?key=$_googleApiKey');
-    final headers = {
-      'Content-Type': 'application/json',
-    };
-    final requestBody = jsonEncode({
-      'document': {'type': 'PLAIN_TEXT', 'content': text, 'language': 'ko'},
-      'encodingType': 'UTF8'
-    });
-
-    try {
-      final response =
-          await http.post(uri, headers: headers, body: requestBody);
-      if (response.statusCode == 200) {
-        final responseJson = jsonDecode(response.body);
-        double score = responseJson['documentSentiment']['score'];
-        String sentimentLabel = _getSentimentLabel(score);
-        return sentimentLabel;
-      } else {
-        return 'Failed to analyze sentiment. Status code: ${response.statusCode}';
-      }
-    } catch (e) {
-      return 'error : Exception caught: $e';
-    }
+  GoogleNLPService() {
+    _model =
+        FirebaseVertexAI.instance.generativeModel(model: 'gemini-1.5-flash');
   }
 
-  String _getSentimentLabel(double score) {
-    if (score > 0.25) return 'positive';
-    if (score < -0.25) return 'negative';
-    return 'neutral';
+  /// 주어진 텍스트의 감정을 분석하여 'negative', 'neutral', 'positive' 중 하나를 반환합니다.
+  Future<String> analyzeSentiment(String text) async {
+    try {
+      final prompt = [
+        Content.text(
+            '''다음 텍스트의 감정을 분석하여 'negative', 'neutral', 'positive' 중 하나만 출력하세요. 다른 텍스트는 포함시키지 마세요.
+
+텍스트: $text'''),
+      ];
+
+      final response = await _model.generateContent(prompt);
+      final sentiment = response.text?.trim().toLowerCase() ?? 'neutral';
+
+      if (!['negative', 'neutral', 'positive'].contains(sentiment)) {
+        return 'neutral'; // 모델이 예상치 못한 응답을 반환할 경우 기본값
+      }
+      return sentiment;
+    } catch (e) {
+      print('Sentiment analysis error: $e');
+      return 'neutral'; // 에러 발생 시 기본값 반환
+    }
   }
 }
 
-// 감정 생성 서비스
+// 메시지 생성 서비스
 class MessageGenerationService {
   late final GenerativeModel _model;
 
@@ -56,23 +42,26 @@ class MessageGenerationService {
         FirebaseVertexAI.instance.generativeModel(model: 'gemini-1.5-flash');
   }
 
+  /// 주어진 메시지와 이전 대화를 기반으로 새로운 메시지를 생성합니다.
+  /// 부정 메시지에 대한 추천 로직은 포함하지 않으며, 호출자가 결과를 처리합니다.
   Future<String> generateResponse(
       String message, List<String> previousMessages) async {
     try {
       final prompt = [
         Content.text(
-            '''당신은 '나'의 메시지를 입력받을 것입니다. 상대방의 예상되는 감정을 한 단어로 이야기 해주세요. 단어만 출력하세요.
+            '''다음 대화 맥락을 고려하여 입력 메시지를 긍정적이거나 중립적인 톤으로 변환한 메시지를 생성하세요. 변환된 메시지만 출력하세요.
 
 이전 대화:
 ${previousMessages.join('\n')}
 
-현재 메시지: $message''')
+입력 메시지: $message'''),
       ];
 
       final response = await _model.generateContent(prompt);
-      return response.text ?? 'No response generated';
+      return response.text?.trim() ?? message; // 생성된 메시지 반환, 실패 시 원본 반환
     } catch (e) {
-      return 'Error: $e';
+      print('Message generation error: $e');
+      return message; // 에러 발생 시 원본 메시지 반환
     }
   }
 }
