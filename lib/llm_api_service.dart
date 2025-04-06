@@ -72,7 +72,6 @@ class MessageGenerationService {
       final prompt = [
         Content.text(
             '''다음 대화 맥락을 고려하여 입력 메시지를 긍정적이거나 중립적인 톤으로 변환한 메시지를 생성하세요. 변환된 메시지만 출력하세요.
-
 이전 대화:
 ${previousMessages.join('\n')}
 
