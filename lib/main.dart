@@ -103,14 +103,16 @@ class MyApp extends StatelessWidget {
           child: MaterialApp(
             title: 'MoodWave',
             theme: ThemeData(
-                useMaterial3: true,
-                textTheme: GoogleFonts.nanumGothicTextTheme(
-                    Theme.of(context).textTheme),
-                colorScheme: ColorScheme.fromSeed(
-                  seedColor: const Color.fromARGB(255, 16, 170, 157),
-                  dynamicSchemeVariant: DynamicSchemeVariant.content,
-                  brightness: Brightness.light,
-                )),
+              useMaterial3: true,
+              textTheme:
+                  GoogleFonts.nanumGothicTextTheme(Theme.of(context).textTheme),
+              colorScheme: ColorScheme.fromSeed(
+                seedColor: const Color.fromARGB(255, 16, 170, 157),
+                dynamicSchemeVariant: DynamicSchemeVariant.content,
+                brightness: Brightness.light,
+              ),
+              scaffoldBackgroundColor: const Color(0xFFEDFFFE), // 배경 색상 추가
+            ),
             home: homeScreen,
             routes: {
               '/home': (context) => const HomePage(),

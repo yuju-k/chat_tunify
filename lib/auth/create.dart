@@ -88,6 +88,14 @@ class _CreatePageState extends State<CreatePage> {
         decoration: InputDecoration(
           labelText: label,
           border: const OutlineInputBorder(),
+          enabledBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: Color(0xFF44C2D0), width: 1.0),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: Color(0xFF44C2D0), width: 2.0),
+          ),
+          filled: true, // 바탕색 채우기 활성화
+          fillColor: Colors.white, // 바탕색을 흰색으로 설정
         ),
         validator: validator,
       ),
@@ -97,7 +105,19 @@ class _CreatePageState extends State<CreatePage> {
   Widget _buildRegisterButton() {
     return ElevatedButton(
       onPressed: _isRegistering ? null : _register,
-      child: const Text('회원등록'),
+      style: ElevatedButton.styleFrom(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12.0),
+        ),
+        backgroundColor:
+            const Color(0xFF44C2D0), // 버튼 배경 색상 (테마의 seedColor과 유사)
+        foregroundColor: Colors.white,
+        minimumSize: const Size(350, 50),
+      ),
+      child: const Text('회원등록',
+          style: TextStyle(
+            fontSize: 16,
+          )),
     );
   }
 
@@ -121,7 +141,7 @@ class _CreatePageState extends State<CreatePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('회원가입')),
+      appBar: AppBar(),
       body: BlocListener<AuthenticationBloc, AuthenticationState>(
         listener: (context, state) {
           if (state is AuthenticationFailure) {
@@ -137,33 +157,83 @@ class _CreatePageState extends State<CreatePage> {
           padding: const EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 120.0),
           child: Form(
             key: _formKey,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _buildTextField(
-                  controller: _emailController,
-                  label: 'Email',
-                  validator: _validateEmail,
+            child: Stack(children: [
+              // assets/images/Moodwave_logo.png 넣기
+              Column(
+                // 정렬 위쪽부터
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Image.asset(
+                      'assets/images/Moodwave_logo.png',
+                      width: 250,
+                    ),
+                  ),
+                ],
+              ),
+              // 네모박스
+              Center(
+                child: Column(
+                  children: [
+                    const SizedBox(height: 220),
+                    Container(
+                      width: 480,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFD8F3F1),
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Colors.black12,
+                            blurRadius: 10.0,
+                            offset: Offset(0, 5),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(15.0),
+                            child: Center(
+                              child: Image.asset(
+                                'assets/images/join.png',
+                                width: 100,
+                              ),
+                            ),
+                          ),
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              _buildTextField(
+                                controller: _emailController,
+                                label: '이메일',
+                                validator: _validateEmail,
+                              ),
+                              _buildTextField(
+                                controller: _passwordController,
+                                label: '비밀번호',
+                                validator: _validatePassword,
+                                obscureText: true,
+                              ),
+                              _buildTextField(
+                                controller: _confirmPasswordController,
+                                label: '비밀번호 확인',
+                                validator: _validateConfirmPassword,
+                                obscureText: true,
+                              ),
+                              const SizedBox(height: 20),
+                              _buildRegisterButton(),
+                              const SizedBox(height: 20),
+                              _buildLoginButton(),
+                              _buildLoadingIndicator(),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-                _buildTextField(
-                  controller: _passwordController,
-                  label: 'Password',
-                  validator: _validatePassword,
-                  obscureText: true,
-                ),
-                _buildTextField(
-                  controller: _confirmPasswordController,
-                  label: 'Confirm Password',
-                  validator: _validateConfirmPassword,
-                  obscureText: true,
-                ),
-                const SizedBox(height: 20),
-                _buildRegisterButton(),
-                const SizedBox(height: 20),
-                _buildLoginButton(),
-                _buildLoadingIndicator(),
-              ],
-            ),
+              ),
+            ]),
           ),
         ),
       ),
