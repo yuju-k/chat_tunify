@@ -1,0 +1,12 @@
+specVersion: "v1"
+serviceId: "moodwave-cbc95"
+location: "us-central1"
+schema:
+  source: "./schema"
+  datasource:
+    postgresql:
+      database: "fdcdb"
+      cloudSql:
+        instanceId: "moodwave-cbc95-fdc"
+      # schemaValidation: "COMPATIBLE"
+connectorDirs: ["./connector"]
